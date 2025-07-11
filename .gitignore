@@ -43,6 +43,10 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
+# Data Processing (large directory - not committed)
+data_processing/
+data_processing/*
+
 # Logs
 *.log
 
