@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+    <!-- Start Button as Link -->
+    <div class="flex justify-center mb-8">
+        <a href="{{ url_for('main.select_platform') }}"
+           class="start-game-btn block w-full max-w-md"
+           style="text-decoration: none;">
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Start Game Recommender</h3>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Search Section -->
+    <div class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8" id="searchSection">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Find Game Recommendations</h2>
+        <form id="searchForm" class="space-y-4">
+            <div>
+                <label for="gameSearch" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search for a game</label>
+                <input type="text" id="gameSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter game name..." required>
+            </div>
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Get Recommendations</button>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="space-y-4">
+        <!-- Results will be dynamically inserted here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// No need for startBtn JS anymore since it's now a link
+
+document.getElementById('searchForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const gameSearch = document.getElementById('gameSearch').value;
+    
+    try {
+        const response = await fetch('/recommend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game_id: gameSearch }),
+        });
+        
+        const data = await response.json();
+        displayResults(data);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+
+function displayResults(recommendations) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+    
+    if (recommendations.length === 0) {
+        resultsDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No recommendations found.</p>';
+        return;
+    }
+    
+    recommendations.forEach(game => {
+        const gameCard = `
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${game.name}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">${game.description}</p>
+                <p class="text-blue-600 dark:text-blue-400">Price: $${game.price}</p>
+            </div>
+        `;
+        resultsDiv.innerHTML += gameCard;
+    });
+}
+</script>
+{% endblock %}

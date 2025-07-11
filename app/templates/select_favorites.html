@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
+  {% for game in games %}
+    {% include 'game_card.html' %}
+  {% endfor %}
+</div>
+
+<!-- Controls if the buttons for loading more games appears or not -->
+<div class="flex justify-between mt-4">
+  {% if previous_offset is not none %}
+    <a href="?offset={{ previous_offset }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+      ← Previous Page
+    </a>
+  {% else %}
+    <span></span> <!-- Empty element to keep spacing when Previous is absent -->
+  {% endif %}
+  
+  {% if next_offset is not none %}
+    <a href="?offset={{ next_offset }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
+      Next Page →
+    </a>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const container = document.querySelector('.grid');
+
+container.addEventListener('mouseenter', event => {
+  const card = event.target.closest('.group');
+  if (!card) return;
+  const video = card.querySelector('video');
+  if (video) video.play();
+}, true); // Use capture phase to catch mouseenter properly
+
+container.addEventListener('mouseleave', event => {
+  const card = event.target.closest('.group');
+  if (!card) return;
+  const video = card.querySelector('video');
+  if (video) video.pause();
+}, true);
+</script>
+{% endblock %}

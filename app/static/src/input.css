@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom dark mode styles */
+@layer base {
+  html.dark {
+    @apply bg-gray-900 text-white;
+  }
+  
+  html.dark body {
+    @apply bg-gray-900 text-white;
+  }
+}
+
+@layer components {
+  /* Card styles */
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200;
+  }
+  
+  /* Button styles */
+  .btn {
+    @apply px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white;
+  }
+  
+  /* Input styles */
+  .input {
+    @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-900 dark:text-white;
+  }
+  
+  /* Platform button styles */
+  .platform-btn {
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-lg p-6 transition-all duration-200 cursor-pointer;
+  }
+
+  .platform-btn:hover {
+    @apply transform scale-105 shadow-lg;
+  }
+
+  .platform-btn.active {
+    @apply border-blue-500 bg-blue-50 dark:bg-blue-900;
+  }
+
+  /* Start Game button styles - extends platform button styling */
+  .start-game-btn {
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-all duration-200 cursor-pointer;
+  }
+
+  .start-game-btn:hover {
+    @apply border-blue-500 bg-blue-50 dark:bg-blue-900 transform scale-105 shadow-lg;
+  }
+
+  .start-game-btn:focus {
+    @apply outline-none border-blue-500;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}

@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Age Verification Section -->
+<div id="ageVerificationSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Please Enter Your Birth Date to Continue:</h2>
+    <form id="ageForm" class="grid grid-cols-3 gap-4">
+        <div>
+            <label for="day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Day</label>
+            <select id="day" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Day</option>
+                {% for i in range(1, 32) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="month" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Month</label>
+            <select id="month" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Month</option>
+                {% for i in range(1, 13) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Year</label>
+            <select id="year" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Year</option>
+                {% for i in range(2025, 1900, -1) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    <button id="verifyAgeBtn" class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        Enter
+    </button>
+</div>
+
+        <!-- Platform Selection Section -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Select Your Platform</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button class="platform-btn" data-platform="all">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Platforms</h3>
+                    </div>
+                </button>
+                <button class="platform-btn" data-platform="windows">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Windows</h3>
+                    </div>
+                </button>
+                <button class="platform-btn" data-platform="mac">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mac</h3>
+                    </div>
+                </button>
+                <button class="platform-btn" data-platform="linux">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Linux</h3>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Continue Button -->
+        <div class="text-center mt-8">
+            <a href="{{ url_for('main.select_favorites') }}" 
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-block">
+                Continue
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const platformButtons = document.querySelectorAll('.platform-btn');
+    const continueBtn = document.getElementById('continue-btn');
+    let selectedPlatform = null;
+
+    // Age Verification Handling
+    document.getElementById('verifyAgeBtn').addEventListener('click', function() {
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+
+        if (!day || !month || !year) {
+            alert('Please enter your full date of birth.');
+            return;
+        }
+
+        const today = new Date();
+        const birthDate = new Date(year, month - 1, day);
+
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            age--;
+        }
+
+        window.userAge = age;
+
+        if (age < 13) {
+            alert('Sorry, you must be at least 13 years old to continue.');
+            return;
+        }
+
+        document.getElementById('ageForm').classList.add('hidden');
+        document.getElementById('verifyAgeBtn').classList.add('hidden');
+
+        // Create and show the Rated M eligibility message in place of form
+        const messageArea = document.createElement('div');
+        messageArea.className = "mt-4 text-lg font-medium";
+
+        if (age >= 17) {
+            messageArea.classList.add('text-green-600', 'dark:text-green-400');
+            messageArea.textContent = "You're 17 or older, Rated M games will be included in your recommendations.";
+            window.isAdultUser = true;
+        } else {
+            messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
+            messageArea.textContent = "You're under 17,  Rated M games will be excluded from your recommendations.";
+            window.isAdultUser = false;
+        }
+
+        document.getElementById('ageVerificationSection').appendChild(messageArea);
+
+        // Scroll to platform selection
+        document.querySelector('[data-platform]').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Platform selection logic
+
+    platformButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            platformButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            this.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
+            gameSearchSection.classList.remove('hidden');
+            selectedPlatformInput.value = this.dataset.platform;
+        });
+    });
+
+    // Game search form logic
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const gameSearch = document.getElementById('gameSearch').value;
+        const platform = selectedPlatformInput.value;
+
+        try {
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    game_id: gameSearch,
+                    platform: platform,
+                    isAdult: window.isAdultUser || false
+                }),
+            });
+
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    // Display recommendations
+    function displayResults(recommendations) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        if (recommendations.length === 0) {
+            resultsDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No recommendations found.</p>';
+            return;
+        }
+
+        recommendations.forEach(game => {
+            const gameCard = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${game.name}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">${game.description}</p>
+                    <div class="flex items-center space-x-4">
+                        <p class="text-blue-600 dark:text-blue-400">Price: $${game.price}</p>
+                        <div class="flex space-x-2">
+                            ${game.platforms ? game.platforms.map(platform => 
+                                `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">${platform}</span>`
+                            ).join('') : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            resultsDiv.innerHTML += gameCard;
+        });
+    }
+
+});
+</script>
+{% endblock %}
