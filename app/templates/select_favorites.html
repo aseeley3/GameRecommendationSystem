@@ -1,35 +1,54 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="animate-fade duration-500 delay-200 transition-colors">
+<div>
+<h2 class="text-4xl font-extrabold dark:text-white text-black text-center transition-colors duration-500 delay-200">Select 5 or more favorites!</h2>
+<p class="text-2xl font-extrabold dark:text-white text-black text-center transition-colors duration-500 delay-200" id="length">{{ selected|length }} Selected</p>
+<hr class="w-48 h-1 mx-auto my-4 bg-gray-300 border-0 rounded-sm md:my-10 dark:bg-gray-700 transition-colors duration-500 delay-200">
+</div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
+
+<form method="post" action="{{ url_for('main.select_favorites') }}">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4 animate-fade duration-1000 delay-200">
   {% for game in games %}
     {% include 'game_card.html' %}
   {% endfor %}
 </div>
 
-<!-- Controls if the buttons for loading more games appears or not -->
+<input type="hidden" name="offset" value="{{ offset or 0 }}">
+
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <a href="?offset={{ previous_offset }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
-      ← Previous Page
-    </a>
+    <input type="submit" name="action" value="← Previous" class="cursor-pointer px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black" onclick="updateItemStatus()">
   {% else %}
-    <span></span> <!-- Empty element to keep spacing when Previous is absent -->
+    <span></span>
   {% endif %}
   
   {% if next_offset is not none %}
-    <a href="?offset={{ next_offset }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
-      Next Page →
-    </a>
+    <input type="submit" name="action" value="Next →" class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white" onclick="updateItemStatus()">
   {% endif %}
+</div>
+  
+<input
+  id="continue-btn"
+  type="submit"
+  value="Go!"
+  name="continue"
+  class="cursor-pointer border-2 fixed bottom-24 left-1/2 transform w-24 h-24 z-50 bg-green-600 hover:bg-green-700 border-green-500 hover:border-green-800 hover:scale-125 rounded-full text-white font-bold shadow-lg text-2xl transition-all duration-300 ease-in-out"
+>
+</form>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+
+var localCount = 0;
 const container = document.querySelector('.grid');
+const continueBtn = document.getElementById("continue-btn")
+const lengthDisplay = document.getElementById('length')
 
 container.addEventListener('mouseenter', event => {
   const card = event.target.closest('.group');
@@ -44,5 +63,68 @@ container.addEventListener('mouseleave', event => {
   const video = card.querySelector('video');
   if (video) video.pause();
 }, true);
+
+
+const serverCount = Number("{{ selected|length }}");
+
+if (continueBtn) {
+  if (serverCount >= 5) {
+    continueBtn.classList.remove('hidden');
+  } else {
+    continueBtn.classList.add('hidden');
+  }
+}
+
+function updateItemStatus(element) {
+    const isCheckbox = element.type === 'checkbox';
+
+    let itemId, isChecked;
+
+    if (isCheckbox) {
+        itemId = element.value;
+        isChecked = element.checked;
+
+        if (isChecked) {
+            localCount += 1;
+        } else {
+            localCount -= 1;
+        }
+    }
+
+    var serverCount = Number("{{ selected|length }}");
+    currentCount = localCount + serverCount
+    lengthDisplay.textContent = currentCount + " Selected"
+
+      if (continueBtn)
+      {
+        if (currentCount >= 5)
+        {
+          continueBtn.classList.remove('hidden')
+        } 
+        else 
+        {
+          continueBtn.classList.add('hidden')
+        }
+      }
+      
+    if (isCheckbox){
+        fetch('/select-favorites', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Update successful!');
+                // Optionally, update other parts of the UI based on the response
+            } else {
+                console.error('Update failed:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
 </script>
 {% endblock %}
