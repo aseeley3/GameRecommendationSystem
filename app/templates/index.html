@@ -34,6 +34,58 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Spinner animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Full screen overlay */
+#spinnerOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5); /* semi-transparent dark overlay */
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Spinner */
+#spinnerOverlay .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #3490dc;
+    border-top: 4px solid #1d4ed8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    background-color: transparent;
+}
+</style>
+
+<!-- Spinner Overlay -->
+<div id="spinnerOverlay">
+    <div class="spinner"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startLink = document.querySelector('.start-game-btn');
+    const spinnerOverlay = document.getElementById('spinnerOverlay');
+
+    startLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        spinnerOverlay.style.display = 'flex';
+        setTimeout(() => {
+            window.location.href = startLink.href;
+        }, 1000);
+    });
+});
+</script>
+
 <script>
 // No need for startBtn JS anymore since it's now a link
 

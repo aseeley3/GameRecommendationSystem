@@ -88,69 +88,50 @@
         </div>
     </div>
 </div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+#spinnerOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+#spinnerOverlay .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #3490dc;
+    border-top: 4px solid #1d4ed8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    background-color: transparent;
+}
+</style>
+
+<div id="spinnerOverlay">
+    <div class="spinner"></div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const spinnerOverlay = document.getElementById('spinnerOverlay');
+    const verifyAgeBtn = document.getElementById('verifyAgeBtn');
+    const continueBtn = document.querySelector('a[href="{{ url_for('main.select_favorites') }}"]');
     const platformButtons = document.querySelectorAll('.platform-btn');
-    const continueBtn = document.getElementById('continue-btn');
-    let selectedPlatform = null;
-
-    // Age Verification Handling
-    document.getElementById('verifyAgeBtn').addEventListener('click', function() {
-        const day = document.getElementById('day').value;
-        const month = document.getElementById('month').value;
-        const year = document.getElementById('year').value;
-
-        if (!day || !month || !year) {
-            alert('Please enter your full date of birth.');
-            return;
-        }
-
-        const today = new Date();
-        const birthDate = new Date(year, month - 1, day);
-
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        const dayDiff = today.getDate() - birthDate.getDate();
-
-        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-            age--;
-        }
-
-        window.userAge = age;
-
-        if (age < 13) {
-            alert('Sorry, you must be at least 13 years old to continue.');
-            return;
-        }
-
-        document.getElementById('ageForm').classList.add('hidden');
-        document.getElementById('verifyAgeBtn').classList.add('hidden');
-
-        // Create and show the Rated M eligibility message in place of form
-        const messageArea = document.createElement('div');
-        messageArea.className = "mt-4 text-lg font-medium";
-
-        if (age >= 17) {
-            messageArea.classList.add('text-green-600', 'dark:text-green-400');
-            messageArea.textContent = "You're 17 or older, Rated M games will be included in your recommendations.";
-            window.isAdultUser = true;
-        } else {
-            messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
-            messageArea.textContent = "You're under 17,  Rated M games will be excluded from your recommendations.";
-            window.isAdultUser = false;
-        }
-
-        document.getElementById('ageVerificationSection').appendChild(messageArea);
-
-        // Scroll to platform selection
-        document.querySelector('[data-platform]').scrollIntoView({ behavior: 'smooth' });
-    });
+    let selectedPlatformInput = { value: null }; // Placeholder for selected platform input
+    let gameSearchSection = { classList: { remove: function() {} } }; //
 
     // Platform selection logic
-
     platformButtons.forEach(button => {
         button.addEventListener('click', function() {
             platformButtons.forEach(btn => {
@@ -164,34 +145,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Game search form logic
-    document.getElementById('searchForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const gameSearch = document.getElementById('gameSearch').value;
-        const platform = selectedPlatformInput.value;
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gameSearch = document.getElementById('gameSearch').value;
+            const platform = selectedPlatformInput.value;
 
-        try {
-            const response = await fetch('/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    game_id: gameSearch,
-                    platform: platform,
-                    isAdult: window.isAdultUser || false
-                }),
-            });
+            try {
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        game_id: gameSearch,
+                        platform: platform,
+                        isAdult: window.isAdultUser || false
+                    }),
+                });
 
-            const data = await response.json();
-            displayResults(data);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    });
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
 
     // Display recommendations
     function displayResults(recommendations) {
         const resultsDiv = document.getElementById('results');
+        if (!resultsDiv) return;
         resultsDiv.innerHTML = '';
 
         if (recommendations.length === 0) {
@@ -218,6 +203,71 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Enter button click with spinner delay
+    verifyAgeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        spinnerOverlay.style.display = 'flex';
+
+        setTimeout(() => {
+            spinnerOverlay.style.display = 'none';
+
+            // Age verification logic
+            const day = document.getElementById('day').value;
+            const month = document.getElementById('month').value;
+            const year = document.getElementById('year').value;
+
+            if (!day || !month || !year) {
+                alert('Please enter your full date of birth.');
+                return;
+            }
+
+            const today = new Date();
+            const birthDate = new Date(year, month - 1, day);
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            const dayDiff = today.getDate() - birthDate.getDate();
+
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                age--;
+            }
+
+            window.userAge = age;
+
+            if (age < 13) {
+                alert('Sorry, you must be at least 13 years old to continue.');
+                return;
+            }
+
+            document.getElementById('ageForm').classList.add('hidden');
+            verifyAgeBtn.classList.add('hidden');
+
+            const messageArea = document.createElement('div');
+            messageArea.className = "mt-4 text-lg font-medium";
+
+            if (age >= 17) {
+                messageArea.classList.add('text-green-600', 'dark:text-green-400');
+                messageArea.textContent = "You're 17 or older, Rated M games will be included in your recommendations.";
+                window.isAdultUser = true;
+            } else {
+                messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
+                messageArea.textContent = "You're under 17, Rated M games will be excluded from your recommendations.";
+                window.isAdultUser = false;
+            }
+
+            document.getElementById('ageVerificationSection').appendChild(messageArea);
+        }, 1000);
+    });
+
+    // Spinner Delay 
+    continueBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        spinnerOverlay.style.display = 'flex';
+
+        setTimeout(() => {
+            window.location.href = this.href;
+        }, 1000);
+    });
 });
 </script>
 {% endblock %}
