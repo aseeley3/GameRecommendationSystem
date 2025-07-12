@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 animate-fade duration-500 delay-200 transition-colors">
     <div class="max-w-4xl mx-auto px-4">
         <!-- Age Verification Section -->
-<div id="ageVerificationSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Please Enter Your Birth Date to Continue:</h2>
+<div id="ageVerificationSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 duration-500 delay-200 transition-colors">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Please Enter Your Birth Date to Continue:</h2>
     <form id="ageForm" class="grid grid-cols-3 gap-4">
         <div>
-            <label for="day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Day</label>
-            <select id="day" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <label for="day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Day</label>
+            <select id="day" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
                 <option value="">Day</option>
                 {% for i in range(1, 32) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -17,8 +17,8 @@
             </select>
         </div>
         <div>
-            <label for="month" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Month</label>
-            <select id="month" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <label for="month" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Month</label>
+            <select id="month" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
                 <option value="">Month</option>
                 {% for i in range(1, 13) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -26,8 +26,8 @@
             </select>
         </div>
         <div>
-            <label for="year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Year</label>
-            <select id="year" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <label for="year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Year</label>
+            <select id="year" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
                 <option value="">Year</option>
                 {% for i in range(2025, 1900, -1) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -35,45 +35,45 @@
             </select>
         </div>
     </form>
-    <button id="verifyAgeBtn" class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+    <button id="verifyAgeBtn" class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-colors">
         Enter
     </button>
 </div>
 
         <!-- Platform Selection Section -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Select Your Platform</h2>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 duration-500 delay-200 transition-colors">
+            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Select Your Platform</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button class="platform-btn" data-platform="all">
+                <button class="platform-btn duration-500 delay-200 transition-colors" data-platform="all">
                     <div class="text-center">
-                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400 duration-500 delay-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Platforms</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white duration-500 delay-200 transition-colors">All Platforms</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="windows">
+                <button class="platform-btn duration-500 delay-200 transition-colors" data-platform="windows">
                     <div class="text-center">
-                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400 duration-500 delay-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Windows</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Windows</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="mac">
+                <button class="platform-btn duration-500 delay-200 transition-colors" data-platform="mac">
                     <div class="text-center">
-                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400 duration-500 delay-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mac</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Mac</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="linux">
+                <button class="platform-btn duration-500 delay-200 transition-colors" data-platform="linux">
                     <div class="text-center">
-                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400 duration-500 delay-200 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Linux</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Linux</h3>
                     </div>
                 </button>
             </div>

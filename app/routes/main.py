@@ -59,29 +59,70 @@ def select_platform():
 
 @bp.route('/select-favorites', methods=['GET', 'POST'])
 def select_favorites():
-    # Get offset from query parameter (default to 0)
-    offset = int(request.args.get('offset', 0))
-    page_size = 50
+            
+    page_size = 20
 
-    # Sort games by review count
+    offset=0
+    selected_all = set(int(appid) for appid in session.get('selected_games', []))
+    total_selected_count = len(selected_all)
+    # Sort games
     sorted_games = sorted(
-        games,
+        games_dict.values(),
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
 
+    if request.method == 'POST':
+        
+
+        if 'selected_games' not in session:
+            session['selected_games'] = []
+
+        selected_all = set(int(appid) for appid in session.get('selected_games', []))
+        
+        offset = int(request.form.get('offset', 0))
+        action = request.form.get('action')
+
+        # Get the current page's games BEFORE modifying offset
+        current_page_game_ids = {
+            (game['appid']) for game in sorted_games[offset:offset + page_size]
+        }
+
+        # Then modify offset based on button action
+        if action == 'Next →':
+            offset += page_size
+        elif action == '← Previous':
+            offset = max(offset - page_size, 0)
+
+        selected = set(int(appid) for appid in request.form.getlist('selected_games'))
+
+        selected_all -= current_page_game_ids
+        selected_all.update(selected)
+
+        session['selected_games'] = list(selected_all)
+        total_selected_count = len(selected_all)
+        print("Selected game IDs:", session['selected_games'])
+        
+        if 'continue' in request.form and len(selected_all) > 4:
+            return redirect(url_for('main.recommendations'))
+            print("Hello")
+    else:
+        offset = int(request.args.get('offset', 0))
+
+    paginated_games = sorted_games[offset:offset + page_size]
+
+    # Pagination controls
     next_offset = offset + page_size if offset + page_size < len(sorted_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
 
-    # Paginate games
-    paginated_games = sorted_games[offset:offset + page_size]
-
-    # Render with current page of games
     return render_template(
         'select_favorites.html',
         games=paginated_games,
         next_offset=next_offset,
-        previous_offset=previous_offset
+        previous_offset=previous_offset,
+        offset=offset,
+        selected=selected_all,
+        total_selected_count=total_selected_count
         )
 
 @bp.route('/recommendations', methods=['GET', 'POST'])
