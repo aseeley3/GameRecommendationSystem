@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade duration-500 delay-200">
+<div>
+<h2 class="text-4xl font-extrabold dark:text-white text-black text-center duration-500 delay-200 transition-colors">Based on your selections, here are you recommendations!</h2>
+<hr class="w-48 h-1 mx-auto my-4 bg-gray-300 border-0 rounded-sm md:my-10 dark:bg-gray-700 transition-colors duration-500 delay-200">
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
+  {% for game in games %}
+    {% include 'game_card.html' %}
+  {% endfor %}
+</div>
+
+<!-- Controls if the buttons for loading more games appears or not -->
+<div class="flex justify-between mt-4">
+  {% if previous_offset is not none %}
+    <a href="?offset={{ previous_offset }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+      ← Previous
+    </a>
+  {% else %}
+    <span></span> <!-- Empty element to keep spacing when Previous is absent -->
+  {% endif %}
+  
+  {% if next_offset is not none %}
+    <a href="?offset={{ next_offset }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
+      Next →
+    </a>
+  {% endif %}
+</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const container = document.querySelector('.grid');
+
+container.addEventListener('mouseenter', event => {
+  const card = event.target.closest('.group');
+  if (!card) return;
+  const video = card.querySelector('video');
+  if (video) video.play();
+}, true); // Use capture phase to catch mouseenter properly
+
+container.addEventListener('mouseleave', event => {
+  const card = event.target.closest('.group');
+  if (!card) return;
+  const video = card.querySelector('video');
+  if (video) video.pause();
+}, true);
+
+document.addEventListener('DOMContentLoaded', function() {
+  const valueElements = document.querySelectorAll('.similarity_score');
+
+  valueElements.forEach(element => {
+    const valueText = element.textContent.trim(); // e.g. "85.3%"
+    const value = parseFloat(valueText.replace('%', ''));
+
+    if (!isNaN(value)) {
+      if (value <= 40) {
+        element.classList.add('text-red-500', 'dark:text-red-500');
+      } else if (value <= 70) {
+        element.classList.add('text-yellow-400', 'dark:text-yellow-400');
+      } else {
+        element.classList.add('text-green-500', 'dark:text-green-500');
+      }
+    }
+  });
+});
+</script>
+{% endblock %}
