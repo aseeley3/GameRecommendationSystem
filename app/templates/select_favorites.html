@@ -10,29 +10,25 @@
 
 <form method="post" action="{{ url_for('main.select_favorites') }}">
 
-{% for appid in selected %}
-<input type="hidden" name="selected_games" value="{{ appid }}">
-{% endfor %}
-
 <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-<div class="relative">
-    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-        </svg>
-    </div>
-    <input 
+<div class="max-w-md mx-auto relative"> <!-- Added relative here -->
+  <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+    </svg>
+  </div>
+  <input 
     type="search"
     id="search-input"
-    class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+    name="name"
+    class="block w-full p-4 ps-10 pe-24 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
     placeholder="Search Games..."
     value="{{ name_filter|default('') }}"
-    />
-    <input
+  />
+  <input
     type="submit"
     name="action"
     value="Search"
-    onclick="updateItemStatus(this)" 
     class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
   />
 </div>
@@ -48,13 +44,13 @@
 
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <input type="submit" name="action" value="← Previous" class="cursor-pointer px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black" onclick="updateItemStatus(this)">
+    <input type="submit" name="action" value="← Previous" class="cursor-pointer px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
   {% else %}
     <span></span>
   {% endif %}
   
   {% if next_offset is not none %}
-    <input type="submit" name="action" value="Next →" class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white" onclick="updateItemStatus(this)">
+    <input type="submit" name="action" value="Next →" class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
   {% endif %}
 </div>
   
@@ -103,7 +99,14 @@ if (continueBtn) {
   }
 }
 
-function updateItemStatus(element, isSearchRequest = false) {
+function updateItemStatus(element) {
+    if (element.type !== 'checkbox') return;
+    const appid = element.value;
+    const action = element.checked ? 'add' : 'remove';
+
+    const formData = new FormData();
+    formData.append('appid', appid);
+    formData.append('action', action);
     const isCheckbox = element.type === 'checkbox';
 
     let itemId, isChecked;
@@ -134,6 +137,21 @@ function updateItemStatus(element, isSearchRequest = false) {
           continueBtn.classList.add('hidden')
         }
       }
+
+    fetch('/select-favorites', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(response => {
+    // response is a Response object; you can check status or do nothing
+    if (!response.ok) {
+      console.error('Server error');
+    }
+    // No JSON parsing, so just continue
+  })
+  .catch(err => {
+    console.error('Fetch error:', err);
+  });
 }
 </script>
 {% endblock %}

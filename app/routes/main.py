@@ -63,7 +63,6 @@ def select_favorites():
         session['selected_games'] = []
     selected_all = set(int(appid) for appid in session.get('selected_games', []))
     page_size = 20
-    offset=0
     total_selected_count = len(selected_all)
     # Sort games
     sorted_games = sorted(
@@ -79,9 +78,15 @@ def select_favorites():
         
         name_filter = request.form.get('name', '').lower()
         action = request.form.get('action')
+        appid_str = request.form.get('appid')
+        try:
+            appid = int(appid_str)
+        except:
+            appid = 0
 
         print(action)
-        if action and action.lower() == 'search':
+
+        if action == 'Search':
             offset = 0
         else:
             offset = int(request.form.get('offset', 0))
@@ -94,18 +99,21 @@ def select_favorites():
         # Get the current page's games BEFORE modifying offset
         current_page_game_ids = {game['appid'] for game in filtered_games[offset:offset + page_size]}
 
-
         # Then modify offset based on button action
         if action == 'Next →':
             offset += page_size
         elif action == '← Previous':
             offset = max(offset - page_size, 0)
 
-        selected = set(int(appid) for appid in request.form.getlist('selected_games'))
+        selected = set(session.get('selected_games', []))
 
-        selected_all.update(selected)
+        if action == 'add':
+            selected.add(appid)
+        elif action == 'remove':
+            selected.discard(appid)  # discard avoids KeyError if appid isn't present
 
-        session['selected_games'] = list(selected_all)
+        session['selected_games'] = list(selected)
+
         print("Selected game IDs:", session['selected_games'])
         
         if 'continue' in request.form and len(selected_all) > 4:
