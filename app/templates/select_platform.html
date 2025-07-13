@@ -44,7 +44,7 @@
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
             <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Select Your Platform</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button class="platform-btn" data-platform="all">
+                <button class="platform-btn p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 duration-500 delay-200 transition-colors" data-platform="all">
                     <div class="text-center">
                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -52,7 +52,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Platforms</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="windows">
+                <button class="platform-btn p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 duration-500 delay-200 transition-colors" data-platform="windows">
                     <div class="text-center">
                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -60,7 +60,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Windows</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="mac">
+                <button class="platform-btn p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 duration-500 delay-200 transition-colors" data-platform="mac">
                     <div class="text-center">
                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -68,7 +68,7 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mac</h3>
                     </div>
                 </button>
-                <button class="platform-btn" data-platform="linux">
+                <button class="platform-btn p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 duration-500 delay-200 transition-colors" data-platform="linux">
                     <div class="text-center">
                         <svg class="w-12 h-12 mx-auto mb-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -82,6 +82,7 @@
         <!-- Continue Button -->
         <div class="text-center mt-8">
             <a href="{{ url_for('main.select_favorites') }}" 
+                id="continueBtn"
                 class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-block">
                 Continue
             </a>
@@ -98,99 +99,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const verifyAgeBtn = document.getElementById('verifyAgeBtn');
     const continueBtn = document.querySelector("a[href='{{ url_for('main.select_favorites') }}']");
     const platformButtons = document.querySelectorAll('.platform-btn');
-    let selectedPlatformInput = { value: null }; // Placeholder for selected platform input
-    let gameSearchSection = { classList: { remove: function() {} } }; //
 
-    // Platform selection logic
-    platformButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            platformButtons.forEach(btn => {
-                btn.classList.remove('active');
-            });
+    // Age Verification Handling
+    document.getElementById('verifyAgeBtn').addEventListener('click', function() {
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
 
-            this.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
-            gameSearchSection.classList.remove('hidden');
-            selectedPlatformInput.value = this.dataset.platform;
-        });
-    });
-
-    // Game search form logic
-    const searchForm = document.getElementById('searchForm');
-    if (searchForm) {
-        searchForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const gameSearch = document.getElementById('gameSearch').value;
-            const platform = selectedPlatformInput.value;
-
-            try {
-                const response = await fetch('/recommend', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        game_id: gameSearch,
-                        platform: platform,
-                        isAdult: window.isAdultUser || false
-                    }),
-                });
-
-                const data = await response.json();
-                displayResults(data);
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        });
-    }
-
-    // Display recommendations
-    function displayResults(recommendations) {
-        const resultsDiv = document.getElementById('results');
-        if (!resultsDiv) return;
-        resultsDiv.innerHTML = '';
-
-        if (recommendations.length === 0) {
-            resultsDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No recommendations found.</p>';
+        if (!day || !month || !year) {
+            alert('Please enter your full date of birth.');
             return;
         }
 
-        recommendations.forEach(game => {
-            const gameCard = `
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${game.name}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">${game.description}</p>
-                    <div class="flex items-center space-x-4">
-                        <p class="text-blue-600 dark:text-blue-400">Price: $${game.price}</p>
-                        <div class="flex space-x-2">
-                            ${game.platforms ? game.platforms.map(platform => 
-                                `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">${platform}</span>`
-                            ).join('') : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            resultsDiv.innerHTML += gameCard;
-        });
-    }
+        // Show spinner during age verification processing
+        if (spinnerOverlay) {
+            spinnerOverlay.style.display = 'flex';
+        }
 
-    // Enter button click with spinner delay
-    verifyAgeBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        spinnerOverlay.style.display = 'flex';
-
+        // Add a small delay to show the spinner and simulate processing
         setTimeout(() => {
-            spinnerOverlay.style.display = 'none';
-
-            // Age verification logic
-            const day = document.getElementById('day').value;
-            const month = document.getElementById('month').value;
-            const year = document.getElementById('year').value;
-
-            if (!day || !month || !year) {
-                alert('Please enter your full date of birth.');
-                return;
-            }
-
             const today = new Date();
             const birthDate = new Date(year, month - 1, day);
 
@@ -204,14 +131,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             window.userAge = age;
 
+            // Hide spinner
+            if (spinnerOverlay) {
+                spinnerOverlay.style.display = 'none';
+            }
+
             if (age < 13) {
                 alert('Sorry, you must be at least 13 years old to continue.');
                 return;
             }
 
             document.getElementById('ageForm').classList.add('hidden');
-            verifyAgeBtn.classList.add('hidden');
+            document.getElementById('verifyAgeBtn').classList.add('hidden');
 
+            // Create and show the Rated M eligibility message in place of form
             const messageArea = document.createElement('div');
             messageArea.className = "mt-4 text-lg font-medium";
 
@@ -221,23 +154,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.isAdultUser = true;
             } else {
                 messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
-                messageArea.textContent = "You're under 17, Rated M games will be excluded from your recommendations.";
+                messageArea.textContent = "You're under 17,  Rated M games will be excluded from your recommendations.";
                 window.isAdultUser = false;
             }
 
             document.getElementById('ageVerificationSection').appendChild(messageArea);
-        }, 400);
+        }, 800); // Slightly longer delay for age verification to feel more "processed"
     });
 
-    // Spinner Delay 
-    continueBtn.addEventListener('click', function(e) {
+    let selectedPlatform = null;
+
+    platformButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active state from ALL buttons first
+            platformButtons.forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900', 'ring-2', 'ring-blue-300');
+                btn.classList.add('border-gray-200', 'dark:border-gray-700');
+            });
+
+            // Add active state only to clicked button
+            this.classList.remove('border-gray-200', 'dark:border-gray-700');
+            this.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900', 'ring-2', 'ring-blue-300');
+            
+            selectedPlatform = this.dataset.platform;
+            
+            // Store selected platform in session storage for use in next page
+            sessionStorage.setItem('selectedPlatform', selectedPlatform);
+        });
+    });
+
+    // Handle Continue button click
+    document.getElementById('continueBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        spinnerOverlay.style.display = 'flex';
 
+        // Show spinner
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.style.display = 'flex';
+        }
+
+        const selectedPlatform = sessionStorage.getItem('selectedPlatform');
+        let url = "{{ url_for('main.select_favorites') }}";
+
+        if (selectedPlatform && selectedPlatform !== 'all') {
+            url += '?platform=' + selectedPlatform;
+        }
+
+        // Add a small delay to show the spinner before navigation
         setTimeout(() => {
-            window.location.href = this.href;
+            window.location.href = url;
         }, 400);
     });
+
+
 });
 </script>
 {% endblock %}
