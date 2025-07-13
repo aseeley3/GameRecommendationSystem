@@ -36,10 +36,11 @@
   value="Go!"
   name="continue"
   class="cursor-pointer border-2 fixed bottom-24 left-1/2 transform w-24 h-24 z-50 bg-green-600 hover:bg-green-700 border-green-500 hover:border-green-800 hover:scale-125 rounded-full text-white font-bold shadow-lg text-2xl transition-all duration-300 ease-in-out"
+  onclick="document.getElementById('spinnerOverlay').style.display = 'flex'"
 >
 </form>
 </div>
-
+{% include "spinner.html" %}
 {% endblock %}
 
 {% block scripts %}
