@@ -5,6 +5,7 @@ This module handles all the web routes and API endpoints.
 
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from app.services.recommender import get_recommendations
+from app.services.platform_service import create_platform_service
 import pandas as pd
 import pickle
 import numpy as np
@@ -24,7 +25,7 @@ merged_df = (games_df
              .merge(descriptions_df, on='appid', how='left'))
 
 games = merged_df.to_dict(orient='records')
-games_dict = {g['appid']: g for g in games}
+games_dict = {game['appid']: game for game in games}
 
 with open('data_processing/ids_to_reviews.pkl', 'rb') as f:
     reviews_dict = pickle.load(f)
@@ -34,13 +35,6 @@ with open("data_processing/description_fallback_embeddings.pkl", "rb") as f:
 
 @bp.route('/')
 def index():
-    """
-    Home page route.
-    Renders the main search interface where users can find game recommendations.
-    
-    Returns:
-        Rendered template: The index.html template with the search interface
-    """
     return render_template('index.html')
 
 @bp.route('/recommend', methods=['GET'])
@@ -54,27 +48,22 @@ def select_platform():
     if request.method == 'POST':
         selected_platforms = request.form.getlist('platform')
         # Process selected platforms as needed
-        return render_template('select_favoritres.html', platforms=selected_platforms)
+        return render_template('select_favorites.html', platforms=selected_platforms)
     return render_template('select_platform.html')
 
 @bp.route('/select-favorites', methods=['GET', 'POST'])
 def select_favorites():
-            
+    offset = int(request.args.get('offset', 0))
     page_size = 20
 
-    offset=0
-    selected_all = set(int(appid) for appid in session.get('selected_games', []))
-    total_selected_count = len(selected_all)
-    # Sort games
+    # Sort games by review count
     sorted_games = sorted(
-        games_dict.values(),
+        games,
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
 
     if request.method == 'POST':
-        
-
         if 'selected_games' not in session:
             session['selected_games'] = []
 
@@ -105,9 +94,10 @@ def select_favorites():
         
         if 'continue' in request.form and len(selected_all) > 4:
             return redirect(url_for('main.recommendations'))
-            print("Hello")
     else:
         offset = int(request.args.get('offset', 0))
+        selected_all = set(int(appid) for appid in session.get('selected_games', []))
+        total_selected_count = len(selected_all)
 
     paginated_games = sorted_games[offset:offset + page_size]
 
@@ -130,6 +120,7 @@ def recommendations():
     # Get offset from query parameter (default to 0)
     offset = int(request.args.get('offset', 0))
     page_size = 20
+    platform = request.args.get('platform', 'all')
 
     game_ids = list(embeddings_dict.keys())
 
@@ -152,7 +143,6 @@ def recommendations():
         mean_embedding = mean_embedding.reshape(1, -1)
     else:
         mean_embedding = target_embeddings[0].reshape(1, -1)
-
 
     similarities = cosine_similarity(mean_embedding, all_embeddings)[0]
 
@@ -178,12 +168,13 @@ def recommendations():
 
     # Paginate games
     paginated_games = selected_games[offset:offset + page_size]
-    print(f"Length of Recommendations {len(games)}")
+    print(f"Length of Recommendations {len(selected_games)}")
 
     # Render with current page of games
     return render_template(
         'recommendations.html',
         games=paginated_games,
         next_offset=next_offset,
-        previous_offset=previous_offset
+        previous_offset=previous_offset,
+        current_platform=platform
         )

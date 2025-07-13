@@ -20,13 +20,17 @@
 
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <input type="submit" name="action" value="← Previous" class="cursor-pointer px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black" onclick="updateItemStatus()">
+    <a href="?offset={{ previous_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+      ← Previous Page
+    </a>
   {% else %}
     <span></span>
   {% endif %}
   
   {% if next_offset is not none %}
-    <input type="submit" name="action" value="Next →" class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white" onclick="updateItemStatus()">
+    <a href="?offset={{ next_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
+      Next Page →
+    </a>
   {% endif %}
 </div>
   
@@ -44,11 +48,83 @@
 
 {% block scripts %}
 <script>
+// Check for platform selection from previous page
+document.addEventListener('DOMContentLoaded', function() {
+    const selectedPlatform = sessionStorage.getItem('selectedPlatform');
+    if (selectedPlatform && selectedPlatform !== 'all') {
+        // Update platform filter in current URL to match selected platform
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPlatform = urlParams.get('platform');
+        
+        // If no platform in URL or different platform, update it
+        if (!currentPlatform || currentPlatform !== selectedPlatform) {
+            urlParams.set('platform', selectedPlatform);
+            const newUrl = window.location.pathname + '?' + urlParams.toString();
+            window.history.replaceState({}, '', newUrl);
+            
+            // Reload the page to apply the correct platform filter
+            window.location.reload();
+        }
+    }
+});
 
-var localCount = 0;
 const container = document.querySelector('.grid');
 const continueBtn = document.getElementById("continue-btn")
 const lengthDisplay = document.getElementById('length')
+
+let localCount = 0;
+
+// Initialize checkboxes and count based on sessionStorage
+function initializeCheckboxes() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const currentPageSelected = sessionStorage.getItem('currentPageSelected') || '{}';
+    const currentPageSelectedObj = JSON.parse(currentPageSelected);
+    
+    localCount = 0;
+    
+    checkboxes.forEach(checkbox => {
+        const gameId = checkbox.value;
+        if (currentPageSelectedObj[gameId]) {
+            checkbox.checked = true;
+            localCount++;
+        } else {
+            checkbox.checked = false;
+        }
+    });
+    
+    updateDisplay();
+}
+
+function updateDisplay() {
+    const serverCount = Number("{{ selected|length }}");
+    const currentCount = localCount + serverCount;
+    lengthDisplay.textContent = currentCount + " Selected";
+
+    if (continueBtn) {
+        if (currentCount >= 5) {
+            continueBtn.classList.remove('hidden');
+        } else {
+            continueBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Save current page checkbox states to sessionStorage
+function saveCurrentPageState() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const currentPageSelected = {};
+    
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            currentPageSelected[checkbox.value] = true;
+        }
+    });
+    
+    sessionStorage.setItem('currentPageSelected', JSON.stringify(currentPageSelected));
+}
+
+// Initialize on page load
+initializeCheckboxes();
 
 container.addEventListener('mouseenter', event => {
   const card = event.target.closest('.group');
@@ -64,50 +140,33 @@ container.addEventListener('mouseleave', event => {
   if (video) video.pause();
 }, true);
 
-
-const serverCount = Number("{{ selected|length }}");
-
-if (continueBtn) {
-  if (serverCount >= 5) {
-    continueBtn.classList.remove('hidden');
-  } else {
-    continueBtn.classList.add('hidden');
-  }
-}
+// Save state before navigation
+document.addEventListener('beforeunload', saveCurrentPageState);
 
 function updateItemStatus(element) {
     const isCheckbox = element.type === 'checkbox';
 
-    let itemId, isChecked;
-
     if (isCheckbox) {
-        itemId = element.value;
-        isChecked = element.checked;
+        const itemId = element.value;
+        const isChecked = element.checked;
 
         if (isChecked) {
             localCount += 1;
         } else {
             localCount -= 1;
         }
+        
+        // Update sessionStorage immediately
+        saveCurrentPageState();
     }
 
-    var serverCount = Number("{{ selected|length }}");
-    currentCount = localCount + serverCount
-    lengthDisplay.textContent = currentCount + " Selected"
-
-      if (continueBtn)
-      {
-        if (currentCount >= 5)
-        {
-          continueBtn.classList.remove('hidden')
-        } 
-        else 
-        {
-          continueBtn.classList.add('hidden')
-        }
-      }
-      
-    if (isCheckbox){
+    updateDisplay();
+    
+    if (isCheckbox) {
+        const formData = new FormData();
+        formData.append('selected_games', element.value);
+        formData.append('checked', element.checked);
+        
         fetch('/select-favorites', {
             method: 'POST',
             body: formData
@@ -116,7 +175,6 @@ function updateItemStatus(element) {
         .then(data => {
             if (data.success) {
                 console.log('Update successful!');
-                // Optionally, update other parts of the UI based on the response
             } else {
                 console.error('Update failed:', data.message);
             }
