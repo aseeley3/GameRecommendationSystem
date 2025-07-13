@@ -52,18 +52,15 @@
 // Check for platform selection from previous page
 document.addEventListener('DOMContentLoaded', function() {
     const selectedPlatform = sessionStorage.getItem('selectedPlatform');
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPlatform = urlParams.get('platform');
+
     if (selectedPlatform && selectedPlatform !== 'all') {
-        // Update platform filter in current URL to match selected platform
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentPlatform = urlParams.get('platform');
-        
         // If no platform in URL or different platform, update it
         if (!currentPlatform || currentPlatform !== selectedPlatform) {
             urlParams.set('platform', selectedPlatform);
             const newUrl = window.location.pathname + '?' + urlParams.toString();
             window.history.replaceState({}, '', newUrl);
-            
-            // Reload the page to apply the correct platform filter
             window.location.reload();
         }
     }
@@ -80,25 +77,27 @@ function initializeCheckboxes() {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const currentPageSelected = sessionStorage.getItem('currentPageSelected') || '{}';
     const currentPageSelectedObj = JSON.parse(currentPageSelected);
-    
+
     localCount = 0;
-    
+
     checkboxes.forEach(checkbox => {
         const gameId = checkbox.value;
+        const wasLocalSelected = currentPageSelectedObj[gameId];
+
         if (currentPageSelectedObj[gameId]) {
             checkbox.checked = true;
             localCount++;
-        } else {
-            checkbox.checked = false;
         }
+        // Keep server-side selection if no local override
     });
-    
+
     updateDisplay();
 }
 
 function updateDisplay() {
     const serverCount = Number("{{ selected|length }}");
     const currentCount = localCount + serverCount;
+
     lengthDisplay.textContent = currentCount + " Selected";
 
     if (continueBtn) {
@@ -114,13 +113,13 @@ function updateDisplay() {
 function saveCurrentPageState() {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const currentPageSelected = {};
-    
+
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
             currentPageSelected[checkbox.value] = true;
         }
     });
-    
+
     sessionStorage.setItem('currentPageSelected', JSON.stringify(currentPageSelected));
 }
 
@@ -148,7 +147,6 @@ function updateItemStatus(element) {
     const isCheckbox = element.type === 'checkbox';
 
     if (isCheckbox) {
-        const itemId = element.value;
         const isChecked = element.checked;
 
         if (isChecked) {
@@ -156,32 +154,42 @@ function updateItemStatus(element) {
         } else {
             localCount -= 1;
         }
-        
+
         // Update sessionStorage immediately
         saveCurrentPageState();
     }
 
     updateDisplay();
-    
+
     if (isCheckbox) {
         const formData = new FormData();
         formData.append('selected_games', element.value);
         formData.append('checked', element.checked);
-        
-        fetch('/select-favorites', {
+
+        fetch('/update-game-selection', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Update successful!');
+                // Update the display with the server count
+                lengthDisplay.textContent = data.total_count + " Selected";
+
+                // Update continue button visibility
+                if (continueBtn) {
+                    if (data.total_count >= 5) {
+                        continueBtn.classList.remove('hidden');
+                    } else {
+                        continueBtn.classList.add('hidden');
+                    }
+                }
             } else {
                 console.error('Update failed:', data.message);
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error updating game selection:', error);
         });
     }
 }

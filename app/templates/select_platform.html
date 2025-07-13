@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const verifyAgeBtn = document.getElementById('verifyAgeBtn');
     const continueBtn = document.querySelector("a[href='{{ url_for('main.select_favorites') }}']");
     const platformButtons = document.querySelectorAll('.platform-btn');
-    const continueBtn = document.getElementById('continue-btn');
 
     // Age Verification Handling
     document.getElementById('verifyAgeBtn').addEventListener('click', function() {
@@ -148,9 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         document.getElementById('ageVerificationSection').appendChild(messageArea);
-
-        // Scroll to platform selection
-        document.querySelector('[data-platform]').scrollIntoView({ behavior: 'smooth' });
     });
 
     let selectedPlatform = null;
