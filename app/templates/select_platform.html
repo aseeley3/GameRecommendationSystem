@@ -111,42 +111,55 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const today = new Date();
-        const birthDate = new Date(year, month - 1, day);
-
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        const dayDiff = today.getDate() - birthDate.getDate();
-
-        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-            age--;
+        // Show spinner during age verification processing
+        if (spinnerOverlay) {
+            spinnerOverlay.style.display = 'flex';
         }
 
-        window.userAge = age;
+        // Add a small delay to show the spinner and simulate processing
+        setTimeout(() => {
+            const today = new Date();
+            const birthDate = new Date(year, month - 1, day);
 
-        if (age < 13) {
-            alert('Sorry, you must be at least 13 years old to continue.');
-            return;
-        }
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            const dayDiff = today.getDate() - birthDate.getDate();
 
-        document.getElementById('ageForm').classList.add('hidden');
-        document.getElementById('verifyAgeBtn').classList.add('hidden');
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                age--;
+            }
 
-        // Create and show the Rated M eligibility message in place of form
-        const messageArea = document.createElement('div');
-        messageArea.className = "mt-4 text-lg font-medium";
+            window.userAge = age;
 
-        if (age >= 17) {
-            messageArea.classList.add('text-green-600', 'dark:text-green-400');
-            messageArea.textContent = "You're 17 or older, Rated M games will be included in your recommendations.";
-            window.isAdultUser = true;
-        } else {
-            messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
-            messageArea.textContent = "You're under 17,  Rated M games will be excluded from your recommendations.";
-            window.isAdultUser = false;
-        }
+            // Hide spinner
+            if (spinnerOverlay) {
+                spinnerOverlay.style.display = 'none';
+            }
 
-        document.getElementById('ageVerificationSection').appendChild(messageArea);
+            if (age < 13) {
+                alert('Sorry, you must be at least 13 years old to continue.');
+                return;
+            }
+
+            document.getElementById('ageForm').classList.add('hidden');
+            document.getElementById('verifyAgeBtn').classList.add('hidden');
+
+            // Create and show the Rated M eligibility message in place of form
+            const messageArea = document.createElement('div');
+            messageArea.className = "mt-4 text-lg font-medium";
+
+            if (age >= 17) {
+                messageArea.classList.add('text-green-600', 'dark:text-green-400');
+                messageArea.textContent = "You're 17 or older, Rated M games will be included in your recommendations.";
+                window.isAdultUser = true;
+            } else {
+                messageArea.classList.add('text-yellow-600', 'dark:text-yellow-400');
+                messageArea.textContent = "You're under 17,  Rated M games will be excluded from your recommendations.";
+                window.isAdultUser = false;
+            }
+
+            document.getElementById('ageVerificationSection').appendChild(messageArea);
+        }, 800); // Slightly longer delay for age verification to feel more "processed"
     });
 
     let selectedPlatform = null;
