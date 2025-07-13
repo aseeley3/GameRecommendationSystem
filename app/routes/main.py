@@ -52,9 +52,9 @@ def select_platform():
         return render_template('select_favorites.html', platforms=selected_platforms)
     return render_template('select_platform.html')
 
-@bp.route('/select-favorites', methods=['GET', 'POST'])
+@bp.route('/select_favorites', methods=['GET', 'POST'])
 def select_favorites():
-    offset = int(request.args.get('offset', 0))
+    offset = 0
     page_size = 20
     platform = request.args.get('platform', 'all')
     genre = request.args.get('genre', 'all')
@@ -67,6 +67,12 @@ def select_favorites():
     filtered_games = games
 
     # Filter by platform first
+    
+    # Initialize selected games from session
+    if 'selected_games' not in session:
+        session['selected_games'] = []
+    selected = set(int(appid) for appid in session['selected_games'])
+    
     if platform != 'all':
         filtered_games = platform_service.filter_games_by_platform(platform)
 
@@ -83,74 +89,79 @@ def select_favorites():
         reverse=True
     )
 
+    # --- IMPORTANT: read name filter from args for both GET and POST ---
+    name_filter = request.args.get('name', '').lower().strip()
+
     if request.method == 'POST':
-        if 'selected_games' not in session:
-            session['selected_games'] = []
+        form = request.form
+        action = form.get('action')
+        offset = int(form.get('offset', 0))
+        # Handle add/remove selection from POST
+        appid_str = form.get('appid')
 
-        selected_all = set(int(appid) for appid in session.get('selected_games', []))
-        
-        offset = int(request.form.get('offset', 0))
-        action = request.form.get('action')
+        if appid_str and appid_str.isdigit():
+            appid = int(appid_str)
+            if action == 'add':
+                selected.add(appid)
+            elif action == 'remove':
+                selected.discard(appid)
+            print(selected)
+            print(len(selected))
+            session['selected_games'] = list(selected)
 
-        # Get the current page's games BEFORE modifying offset
-        current_page_game_ids = {
-            (game['appid']) for game in sorted_games[offset:offset + page_size]
-        }
-
-        # Then modify offset based on button action
+        # Handle pagination buttons via form 'action'
         if action == 'Next →':
             offset += page_size
         elif action == '← Previous':
             offset = max(offset - page_size, 0)
 
-        selected = set(int(appid) for appid in request.form.getlist('selected_games'))
-
-        selected_all -= current_page_game_ids
-        selected_all.update(selected)
-
-        session['selected_games'] = list(selected_all)
-        total_selected_count = len(selected_all)
-        
-        if 'continue' in request.form and len(selected_all) > 4:
+        # Handle continue action
+        if 'continue' in form and len(selected) >= 5:
             return redirect(url_for('main.recommendations'))
+
     else:
+        # For GET requests, get offset from query params
         offset = int(request.args.get('offset', 0))
-        selected_all = set(int(appid) for appid in session.get('selected_games', []))
-        total_selected_count = len(selected_all)
+        if 'name' in request.args:
+            offset = 0
 
+    # Filter games by name if present
+    if name_filter:
+        sorted_games = [game for game in sorted_games if name_filter in game['name'].lower()]
+
+    # Paginate games
     paginated_games = sorted_games[offset:offset + page_size]
-
-    # Pagination controls
     next_offset = offset + page_size if offset + page_size < len(sorted_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
 
-    # Get detailed info about selected games for template
+    # Prepare selected games details for template
     selected_games_details = []
-    for game_id in session.get('selected_games', []):
+    for game_id in selected:
         game_info = games_dict.get(game_id)
         if game_info:
             game_platforms = game_info.get('platforms', 'Unknown')
-            game_detail = {
+            selected_games_details.append({
                 'id': game_id,
                 'name': game_info.get('name', 'Unknown'),
                 'platforms': game_platforms,
                 'on_current_platform': platform == 'all' or (game_platforms and platform in game_platforms.lower())
-            }
-            selected_games_details.append(game_detail)
+            })
 
     return render_template(
         'select_favorites.html',
         games=paginated_games,
         next_offset=next_offset,
-        previous_offset=previous_offset,
+        previous_offset=previous_offset if offset > 0 else None,
         offset=offset,
-        selected=selected_all,
-        total_selected_count=total_selected_count,
+        selected=selected,
+        total_selected_count=len(selected),
         current_platform=platform,
         current_genre=genre,
         selected_games_details=selected_games_details,
-        show_genre_filter=True  # Show genre filter on favorites page
+        show_genre_filter=True
+        name_filter=name_filter# Show genre filter on favorites page
         )
+
 
 @bp.route('/update-game-selection', methods=['POST'])
 def update_game_selection():
