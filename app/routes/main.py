@@ -94,8 +94,6 @@ def select_favorites():
 
     platform_filter_list = session.get('platformFilter', 'windows;mac;linux').split(';')
     user_is_adult = int(session.get('isAdultUser', 0))
-    print("inSelectFavs")
-    print(platform_filter_list)
 
     sorted_games = sorted(
         (game for game in games_dict.values()
