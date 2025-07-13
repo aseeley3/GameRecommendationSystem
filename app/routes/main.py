@@ -6,6 +6,7 @@ This module handles all the web routes and API endpoints.
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from app.services.recommender import get_recommendations
 from app.services.platform_service import create_platform_service
+from app.services.genre_header_service import create_genre_service
 import pandas as pd
 import pickle
 import numpy as np
@@ -56,18 +57,30 @@ def select_favorites():
     offset = 0
     page_size = 20
     platform = request.args.get('platform', 'all')
+    genre = request.args.get('genre', 'all')
 
+    # Create services for filtering
+    platform_service = create_platform_service(games)
+    genre_service = create_genre_service(games)
+
+    # Start with all games
+    filtered_games = games
+
+    # Filter by platform first
+    
     # Initialize selected games from session
     if 'selected_games' not in session:
         session['selected_games'] = []
     selected = set(int(appid) for appid in session['selected_games'])
-
-    # Filter games by platform
-    platform_service = create_platform_service(games)
+    
     if platform != 'all':
         filtered_games = platform_service.filter_games_by_platform(platform)
-    else:
-        filtered_games = games
+
+    # Then filter by genre on the already filtered games
+    if genre != 'all':
+        # Create a new genre service with the already filtered games
+        genre_service_filtered = create_genre_service(filtered_games)
+        filtered_games = genre_service_filtered.filter_games_by_genre(genre)
 
     # Sort games by review count
     sorted_games = sorted(
@@ -143,9 +156,11 @@ def select_favorites():
         selected=selected,
         total_selected_count=len(selected),
         current_platform=platform,
+        current_genre=genre,
         selected_games_details=selected_games_details,
-        name_filter=name_filter
-    )
+        show_genre_filter=True
+        name_filter=name_filter# Show genre filter on favorites page
+        )
 
 
 @bp.route('/update-game-selection', methods=['POST'])
@@ -182,12 +197,101 @@ def update_game_selection():
             'message': str(e)
         }), 400
 
+@bp.route('/api/genres')
+def get_genres():
+    """API endpoint to get all available genres from the dataset."""
+    try:
+        genre_service = create_genre_service(games)
+        # Get more genres to ensure we don't miss shooter subgenres
+        all_genres = genre_service.get_popular_genres(limit=100)  # Get top 100 genres
+
+        # Prioritize shooter-related genres and other important ones
+        shooter_keywords = ['shooter', 'fps', 'shoot', 'gun', 'combat', 'war']
+        important_genres = ['Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Sports', 'Racing', 'Puzzle', 'Platformer', 'Fighting', 'Horror', 'Survival', 'Sandbox', 'MMORPG', 'Indie', 'Casual', 'Multiplayer']
+
+        # Separate genres into categories
+        shooter_genres = []
+        important_genre_list = []
+        other_genres = []
+
+        for genre in all_genres:
+            genre_name_lower = genre['name'].lower()
+            if any(keyword in genre_name_lower for keyword in shooter_keywords):
+                shooter_genres.append(genre)
+            elif genre['name'] in important_genres:
+                important_genre_list.append(genre)
+            else:
+                other_genres.append(genre)
+
+        # Debug: Log what shooter genres we found
+        print(f"DEBUG: Found {len(shooter_genres)} shooter genres:")
+        for sg in shooter_genres:
+            print(f"  - {sg['name']}: {sg['count']} games")
+
+        # Combine: important genres first, then shooter genres, then others (limit to ~50 total)
+        final_genres = important_genre_list[:20] + shooter_genres + other_genres[:20]
+
+        # Format for frontend consumption
+        genres_data = [
+            {
+                'name': genre['name'],
+                'display': genre['name'],
+                'count': genre['count']
+            }
+            for genre in final_genres
+        ]
+
+        return jsonify({
+            'success': True,
+            'genres': genres_data,
+            'debug': {
+                'total_genres_found': len(all_genres),
+                'shooter_genres_count': len(shooter_genres),
+                'important_genres_count': len(important_genre_list),
+                'other_genres_count': len(other_genres),
+                'final_count': len(final_genres)
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@bp.route('/api/debug/all-genres')
+def debug_all_genres():
+    """Debug endpoint to see all genres in the dataset."""
+    try:
+        genre_service = create_genre_service(games)
+        all_genres = genre_service.get_popular_genres(limit=200)  # Get many genres
+
+        # Find shooter genres specifically
+        shooter_keywords = ['shooter', 'fps', 'shoot', 'gun', 'combat', 'war']
+        shooter_genres = []
+        for genre in all_genres:
+            if any(keyword in genre['name'].lower() for keyword in shooter_keywords):
+                shooter_genres.append(genre)
+
+        return jsonify({
+            'success': True,
+            'total_count': len(all_genres),
+            'shooter_count': len(shooter_genres),
+            'shooter_genres': [{'name': g['name'], 'count': g['count']} for g in shooter_genres],
+            'all_genres': [{'name': g['name'], 'count': g['count']} for g in all_genres[:50]]  # First 50 for brevity
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @bp.route('/recommendations', methods=['GET', 'POST'])
 def recommendations():
     # Get offset from query parameter (default to 0)
     offset = int(request.args.get('offset', 0))
     page_size = 20
     platform = request.args.get('platform', 'all')
+    genre = request.args.get('genre', 'all')
 
     game_ids = list(embeddings_dict.keys())
 
@@ -230,6 +334,11 @@ def recommendations():
             game_copy['similarity'] = similarity
             selected_games.append(game_copy)
 
+    # Apply genre filtering to recommendations if specified
+    if genre != 'all':
+        genre_service = create_genre_service(selected_games)
+        selected_games = genre_service.filter_games_by_genre(genre)
+
     next_offset = offset + page_size if offset + page_size < len(selected_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
 
@@ -242,5 +351,7 @@ def recommendations():
         games=paginated_games,
         next_offset=next_offset,
         previous_offset=previous_offset,
-        current_platform=platform
+        current_platform=platform,
+        current_genre=genre,
+        show_genre_filter=True  # Show genre filter on recommendations page
         )

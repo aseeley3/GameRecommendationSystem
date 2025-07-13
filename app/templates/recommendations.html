@@ -16,7 +16,7 @@
 <!-- Controls if the buttons for loading more games appears or not -->
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <a href="?offset={{ previous_offset }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+    <a href="?offset={{ previous_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
       ← Previous
     </a>
   {% else %}
@@ -24,7 +24,7 @@
   {% endif %}
   
   {% if next_offset is not none %}
-    <a href="?offset={{ next_offset }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
+    <a href="?offset={{ next_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
       Next →
     </a>
   {% endif %}
