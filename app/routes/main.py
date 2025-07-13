@@ -5,6 +5,7 @@ This module handles all the web routes and API endpoints.
 
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from app.services.recommender import get_recommendations
+from app.services.platform_service import create_platform_service
 import pandas as pd
 import pickle
 import numpy as np
@@ -24,7 +25,7 @@ merged_df = (games_df
              .merge(descriptions_df, on='appid', how='left'))
 
 games = merged_df.to_dict(orient='records')
-games_dict = {g['appid']: g for g in games}
+games_dict = {game['appid']: game for game in games}
 
 with open('data_processing/ids_to_reviews.pkl', 'rb') as f:
     reviews_dict = pickle.load(f)
@@ -34,13 +35,6 @@ with open("data_processing/description_fallback_embeddings.pkl", "rb") as f:
 
 @bp.route('/')
 def index():
-    """
-    Home page route.
-    Renders the main search interface where users can find game recommendations.
-    
-    Returns:
-        Rendered template: The index.html template with the search interface
-    """
     return render_template('index.html')
 
 @bp.route('/recommend', methods=['GET'])
@@ -54,19 +48,33 @@ def select_platform():
     if request.method == 'POST':
         selected_platforms = request.form.getlist('platform')
         # Process selected platforms as needed
-        return render_template('select_favoritres.html', platforms=selected_platforms)
+        return render_template('select_favorites.html', platforms=selected_platforms)
     return render_template('select_platform.html')
 
 @bp.route('/select-favorites', methods=['GET', 'POST'])
 def select_favorites():
+    # Initialize session variables
     if 'selected_games' not in session:
         session['selected_games'] = []
     selected_all = set(int(appid) for appid in session.get('selected_games', []))
+
+    # Get pagination and filtering parameters
+    offset = int(request.args.get('offset', 0))
     page_size = 20
-    total_selected_count = len(selected_all)
-    # Sort games
+    platform = request.args.get('platform', 'all')
+
+    # Create platform service for filtering
+    platform_service = create_platform_service(games)
+
+    # Filter games by platform first
+    if platform != 'all':
+        filtered_games = platform_service.filter_games_by_platform(platform)
+    else:
+        filtered_games = games
+
+    # Sort games by review count
     sorted_games = sorted(
-        games_dict.values(),
+        filtered_games,
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
@@ -75,8 +83,16 @@ def select_favorites():
     filtered_games = sorted_games
 
     if request.method == 'POST':
-        
+        # Handle search filter
         name_filter = request.form.get('name', '').lower()
+
+        # Ensure session is initialized
+        if 'selected_games' not in session:
+            session['selected_games'] = []
+
+        selected_all = set(int(appid) for appid in session.get('selected_games', []))
+
+        offset = int(request.form.get('offset', 0))
         action = request.form.get('action')
         appid_str = request.form.get('appid')
         try:
@@ -114,6 +130,10 @@ def select_favorites():
 
         session['selected_games'] = list(selected)
 
+        # Update selected_all to reflect current state
+        selected_all = selected
+        total_selected_count = len(selected_all)
+
         print("Selected game IDs:", session['selected_games'])
         
         if 'continue' in request.form and len(selected_all) > 4:
@@ -121,16 +141,34 @@ def select_favorites():
     else:
         name_filter = request.args.get('name', '').lower()
         offset = int(request.args.get('offset', 0))
-        if name_filter:
-            filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
-        else:
-            filtered_games = sorted_games
+        selected_all = set(int(appid) for appid in session.get('selected_games', []))
+        total_selected_count = len(selected_all)
+
+    # Apply name filter if provided
+    if name_filter:
+        filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
+    else:
+        filtered_games = sorted_games
 
     paginated_games = filtered_games[offset:offset + page_size]
     total_selected_count = len(selected_all)
 
     next_offset = offset + page_size if offset + page_size < len(filtered_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
+
+    # Get detailed info about selected games for template
+    selected_games_details = []
+    for game_id in session.get('selected_games', []):
+        game_info = games_dict.get(game_id)
+        if game_info:
+            game_platforms = game_info.get('platforms', 'Unknown')
+            game_detail = {
+                'id': game_id,
+                'name': game_info.get('name', 'Unknown'),
+                'platforms': game_platforms,
+                'on_current_platform': platform == 'all' or (game_platforms and platform in game_platforms.lower())
+            }
+            selected_games_details.append(game_detail)
 
     return render_template(
         'select_favorites.html',
@@ -140,14 +178,51 @@ def select_favorites():
         offset=offset,
         selected=selected_all,
         total_selected_count=total_selected_count,
-        name_filter=name_filter
+        name_filter=name_filter,
+        current_platform=platform,
+        selected_games_details=selected_games_details
     )
+
+@bp.route('/update-game-selection', methods=['POST'])
+def update_game_selection():
+    try:
+        game_id = int(request.form.get('selected_games'))
+        is_checked = request.form.get('checked') == 'true'
+
+        # Initialize session if needed
+        if 'selected_games' not in session:
+            session['selected_games'] = []
+
+        # Get current selected games
+        selected_games = set(int(appid) for appid in session.get('selected_games', []))
+
+        # Update selection
+        if is_checked:
+            selected_games.add(game_id)
+        else:
+            selected_games.discard(game_id)
+
+        # Save back to session
+        session['selected_games'] = list(selected_games)
+
+        return jsonify({
+            'success': True,
+            'total_count': len(session['selected_games']),
+            'selected_games': session['selected_games']
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 400
 
 @bp.route('/recommendations', methods=['GET', 'POST'])
 def recommendations():
     # Get offset from query parameter (default to 0)
     offset = int(request.args.get('offset', 0))
     page_size = 20
+    platform = request.args.get('platform', 'all')
 
     game_ids = list(embeddings_dict.keys())
 
@@ -170,7 +245,6 @@ def recommendations():
         mean_embedding = mean_embedding.reshape(1, -1)
     else:
         mean_embedding = target_embeddings[0].reshape(1, -1)
-
 
     similarities = cosine_similarity(mean_embedding, all_embeddings)[0]
 
@@ -196,12 +270,12 @@ def recommendations():
 
     # Paginate games
     paginated_games = selected_games[offset:offset + page_size]
-    print(f"Length of Recommendations {len(games)}")
 
     # Render with current page of games
     return render_template(
         'recommendations.html',
         games=paginated_games,
         next_offset=next_offset,
-        previous_offset=previous_offset
+        previous_offset=previous_offset,
+        current_platform=platform
         )
