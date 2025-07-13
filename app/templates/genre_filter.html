@@ -1,0 +1,341 @@
+<!-- Genre Filter Component -->
+<div class="relative" id="header-genre-filter">
+    <button
+        id="header-genre-btn"
+        class="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 text-sm font-medium"
+        onclick="toggleHeaderGenreFilter()"
+    >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+        </svg>
+        <span id="header-genre-text">Genre Filter</span>
+        <svg id="header-genre-icon" class="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <!-- Full-Width Dropdown Menu -->
+    <div id="header-genre-dropdown" class="hidden fixed top-16 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-lg z-40">
+        <div class="relative px-6 py-4">
+            <!-- Left Scroll Arrow -->
+            <div id="scroll-left-arrow" class="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 opacity-0 transition-opacity duration-300 pointer-events-none">
+                <button class="w-8 h-8 bg-gray-800 dark:bg-gray-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Right Scroll Arrow -->
+            <div id="scroll-right-arrow" class="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 opacity-0 transition-opacity duration-300 pointer-events-none">
+                <button class="w-8 h-8 bg-gray-800 dark:bg-gray-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Scrollable Horizontal Genre Bar -->
+            <div id="genre-scroll-container" class="overflow-x-auto scrollbar-hide mx-8" style="scroll-behavior: smooth;">
+                <div id="genre-buttons-container" class="flex gap-2 min-w-max">
+                    <!-- All Genres -->
+                    <button
+                        class="header-genre-option px-3 py-1.5 text-sm rounded-full transition-all duration-200 font-medium whitespace-nowrap bg-blue-600 text-white flex-shrink-0"
+                        data-genre="all"
+                        onclick="selectHeaderGenre('all')"
+                    >
+                        All Genres
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Genre Filter
+    let headerGenreData = [];
+    let isHeaderGenreDropdownOpen = false;
+
+    function toggleHeaderGenreFilter() {
+        const dropdown = document.getElementById('header-genre-dropdown');
+        const icon = document.getElementById('header-genre-icon');
+        
+        isHeaderGenreDropdownOpen = !isHeaderGenreDropdownOpen;
+        
+        if (isHeaderGenreDropdownOpen) {
+            dropdown.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+
+            // Load genre data if not already loaded
+            if (headerGenreData.length === 0) {
+                loadHeaderGenreData();
+            }
+        } else {
+            dropdown.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+
+    function loadHeaderGenreData() {
+        // Fetch genres dynamically from the API
+        fetch('/api/genres')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    headerGenreData = data.genres;
+                    populateHeaderGenreDropdown();
+                } else {
+                    console.error('Failed to load genres:', data.error);
+                    // Fallback to basic genres if API fails
+                    headerGenreData = [
+                        { name: 'Action', display: 'Action' },
+                        { name: 'Adventure', display: 'Adventure' },
+                        { name: 'RPG', display: 'RPG' },
+                        { name: 'Strategy', display: 'Strategy' },
+                        { name: 'Simulation', display: 'Simulation' },
+                        { name: 'Sports', display: 'Sports' },
+                        { name: 'Racing', display: 'Racing' },
+                        { name: 'Indie', display: 'Indie' },
+                        { name: 'Casual', display: 'Casual' }
+                    ];
+                    populateHeaderGenreDropdown();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching genres:', error);
+                // Fallback to basic genres if fetch fails
+                headerGenreData = [
+                    { name: 'Action', display: 'Action' },
+                    { name: 'Adventure', display: 'Adventure' },
+                    { name: 'RPG', display: 'RPG' },
+                    { name: 'Strategy', display: 'Strategy' },
+                    { name: 'Simulation', display: 'Simulation' },
+                    { name: 'Sports', display: 'Sports' },
+                    { name: 'Racing', display: 'Racing' },
+                    { name: 'Indie', display: 'Indie' },
+                    { name: 'Casual', display: 'Casual' }
+                ];
+                populateHeaderGenreDropdown();
+            });
+    }
+
+    function populateHeaderGenreDropdown() {
+        const container = document.getElementById('genre-buttons-container');
+        if (!container) return;
+
+        // Clear existing buttons except "All Genres"
+        const allGenresBtn = container.querySelector('[data-genre="all"]');
+        container.innerHTML = '';
+        if (allGenresBtn) {
+            container.appendChild(allGenresBtn);
+        }
+
+        // Add all available genres from the API
+        headerGenreData.forEach(genre => {
+            const button = document.createElement('button');
+            button.className = 'header-genre-option px-3 py-1.5 text-sm rounded-full transition-all duration-200 font-medium whitespace-nowrap bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 flex-shrink-0';
+            button.setAttribute('data-genre', genre.name);
+            button.onclick = () => selectHeaderGenre(genre.name);
+            button.textContent = genre.display;
+            container.appendChild(button);
+        });
+
+        // Setup scroll arrows after a brief delay to ensure DOM is ready
+        setTimeout(() => {
+            setupScrollArrows();
+        }, 50);
+        updateHeaderGenreText(getCurrentGenre());
+    }
+
+    function setupScrollArrows() {
+        const container = document.getElementById('genre-scroll-container');
+        const leftArrow = document.getElementById('scroll-left-arrow');
+        const rightArrow = document.getElementById('scroll-right-arrow');
+
+        if (!container || !leftArrow || !rightArrow) return;
+
+        function updateArrowVisibility() {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            const buttonsContainer = document.getElementById('genre-buttons-container');
+            const buttonCount = buttonsContainer ? buttonsContainer.children.length : 0;
+
+            // Show arrows if we have many genres (more than 10) or if content actually overflows
+            const hasOverflow = scrollWidth > clientWidth + 5;
+            const hasManyGenres = buttonCount > 10;
+            const shouldShowArrows = hasOverflow || hasManyGenres;
+
+            console.log('Arrow visibility:', {
+                scrollLeft, scrollWidth, clientWidth, buttonCount,
+                hasOverflow, hasManyGenres, shouldShowArrows
+            });
+
+            if (!shouldShowArrows) {
+                // Hide both arrows
+                leftArrow.classList.add('opacity-0', 'pointer-events-none');
+                leftArrow.classList.remove('opacity-100', 'pointer-events-auto');
+                rightArrow.classList.add('opacity-0', 'pointer-events-none');
+                rightArrow.classList.remove('opacity-100', 'pointer-events-auto');
+                return;
+            }
+
+            // Show left arrow if we can scroll left
+            if (scrollLeft > 0) {
+                leftArrow.classList.remove('opacity-0', 'pointer-events-none');
+                leftArrow.classList.add('opacity-100', 'pointer-events-auto');
+            } else {
+                leftArrow.classList.add('opacity-0', 'pointer-events-none');
+                leftArrow.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+
+            // Show right arrow if we can scroll right OR if we have many genres and haven't scrolled yet
+            const canScrollRight = scrollLeft < scrollWidth - clientWidth - 1;
+            const showRightArrow = canScrollRight || (hasManyGenres && scrollLeft === 0);
+
+            if (showRightArrow) {
+                rightArrow.classList.remove('opacity-0', 'pointer-events-none');
+                rightArrow.classList.add('opacity-100', 'pointer-events-auto');
+            } else {
+                rightArrow.classList.add('opacity-0', 'pointer-events-none');
+                rightArrow.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+        }
+
+        // Initial check with delay to ensure DOM is rendered
+        setTimeout(() => {
+            updateArrowVisibility();
+        }, 100);
+
+        // Update on scroll
+        container.addEventListener('scroll', updateArrowVisibility);
+
+        // Also update on window resize
+        window.addEventListener('resize', updateArrowVisibility);
+
+        // Arrow click handlers
+        leftArrow.querySelector('button').onclick = () => {
+            container.scrollBy({ left: -200, behavior: 'smooth' });
+        };
+
+        rightArrow.querySelector('button').onclick = () => {
+            container.scrollBy({ left: 200, behavior: 'smooth' });
+        };
+    }
+
+    function getCurrentGenre() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('genre') || 'all';
+    }
+
+    function updateHeaderGenreText(selectedGenre) {
+        const genreText = document.getElementById('header-genre-text');
+        if (!genreText) return;
+
+        if (selectedGenre === 'all') {
+            genreText.textContent = 'Genre Filter';
+        } else {
+            // Find the display name for the genre
+            const genreData = headerGenreData.find(g => g.name === selectedGenre);
+            const displayName = genreData ? genreData.display : selectedGenre;
+            genreText.textContent = displayName;
+        }
+
+        // Update button states
+        const buttons = document.querySelectorAll('.header-genre-option');
+        buttons.forEach(button => {
+            const buttonGenre = button.getAttribute('data-genre');
+            if (buttonGenre === selectedGenre) {
+                button.className = 'header-genre-option px-3 py-1.5 text-sm rounded-full transition-all duration-200 font-medium whitespace-nowrap bg-blue-600 text-white flex-shrink-0';
+            } else {
+                button.className = 'header-genre-option px-3 py-1.5 text-sm rounded-full transition-all duration-200 font-medium whitespace-nowrap bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500 flex-shrink-0';
+            }
+        });
+    }
+
+    function selectHeaderGenre(genre) {
+        // Show the same spinner used for platform selection
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.style.display = 'flex';
+        }
+
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Update or remove genre parameter
+        if (genre === 'all') {
+            urlParams.delete('genre');
+        } else {
+            urlParams.set('genre', genre);
+        }
+
+        // Reset offset when changing genre
+        urlParams.delete('offset');
+
+        // Build new URL
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+
+        // Add a small delay to show the spinner before navigation (same as platform selection)
+        setTimeout(() => {
+            window.location.href = newUrl;
+        }, 400);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const genreFilter = document.getElementById('header-genre-filter');
+        const dropdown = document.getElementById('header-genre-dropdown');
+        
+        if (genreFilter && dropdown && !genreFilter.contains(event.target)) {
+            if (isHeaderGenreDropdownOpen) {
+                toggleHeaderGenreFilter();
+            }
+        }
+    });
+
+    // Initialize genre filter when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const genreFilter = document.getElementById('header-genre-filter');
+        if (genreFilter) {
+            updateHeaderGenreText(getCurrentGenre());
+            loadHeaderGenreData();
+        }
+    });
+</script>
+
+<style>
+    /* Hide scrollbar for genre container */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Smooth scrolling for genre container */
+    #genre-scroll-container {
+        scroll-behavior: smooth;
+    }
+
+    /* Genre button hover effects */
+    .header-genre-option {
+        transform-origin: center;
+    }
+
+    .header-genre-option:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive adjustments for horizontal bar */
+    @media (max-width: 768px) {
+        #header-genre-dropdown .flex {
+            gap: 0.375rem;
+        }
+
+        .header-genre-option {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+</style>
