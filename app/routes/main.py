@@ -85,12 +85,15 @@ def select_favorites():
         offset = int(form.get('offset', 0))
         # Handle add/remove selection from POST
         appid_str = form.get('appid')
+
         if appid_str and appid_str.isdigit():
             appid = int(appid_str)
             if action == 'add':
                 selected.add(appid)
             elif action == 'remove':
                 selected.discard(appid)
+            print(selected)
+            print(len(selected))
             session['selected_games'] = list(selected)
 
         # Handle pagination buttons via form 'action'
@@ -106,6 +109,8 @@ def select_favorites():
     else:
         # For GET requests, get offset from query params
         offset = int(request.args.get('offset', 0))
+        if 'name' in request.args:
+            offset = 0
 
     # Filter games by name if present
     if name_filter:
