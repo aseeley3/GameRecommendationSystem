@@ -158,7 +158,7 @@ def select_favorites():
         current_platform=platform,
         current_genre=genre,
         selected_games_details=selected_games_details,
-        show_genre_filter=True
+        show_genre_filter=True,
         name_filter=name_filter# Show genre filter on favorites page
         )
 
