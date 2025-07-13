@@ -47,15 +47,15 @@
 
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <a href="?offset={{ previous_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
-      ← Previous Page
+<a href="{{ url_for('main.select_favorites', offset=previous_offset, platform=current_platform, genre=current_genre if current_genre != 'all' else None, name=name_filter if name_filter else None) }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+  ← Previous Page
     </a>
   {% else %}
     <span></span>
   {% endif %}
 
   {% if next_offset is not none %}
-    <a href="?offset={{ next_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
+<a href="{{ url_for('main.select_favorites', offset=next_offset, platform=current_platform, genre=current_genre if current_genre != 'all' else None, name=name_filter if name_filter else None) }}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
       Next Page →
     </a>
   {% endif %}

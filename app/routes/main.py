@@ -122,8 +122,6 @@ def select_favorites():
     else:
         # For GET requests, get offset from query params
         offset = int(request.args.get('offset', 0))
-        if 'name' in request.args:
-            offset = 0
 
     # Filter games by name if present
     if name_filter:
