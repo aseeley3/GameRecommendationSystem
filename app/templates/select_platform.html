@@ -173,15 +173,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle Continue button click
     document.getElementById('continueBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        
+
+        // Show spinner
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.style.display = 'flex';
+        }
+
         const selectedPlatform = sessionStorage.getItem('selectedPlatform');
         let url = "{{ url_for('main.select_favorites') }}";
-        
+
         if (selectedPlatform && selectedPlatform !== 'all') {
             url += '?platform=' + selectedPlatform;
         }
-        
-        window.location.href = url;
+
+        // Add a small delay to show the spinner before navigation
+        setTimeout(() => {
+            window.location.href = url;
+        }, 400);
     });
 
 
