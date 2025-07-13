@@ -59,11 +59,11 @@ def select_platform():
 
 @bp.route('/select-favorites', methods=['GET', 'POST'])
 def select_favorites():
-            
-    page_size = 20
-
-    offset=0
+    if 'selected_games' not in session:
+        session['selected_games'] = []
     selected_all = set(int(appid) for appid in session.get('selected_games', []))
+    page_size = 20
+    offset=0
     total_selected_count = len(selected_all)
     # Sort games
     sorted_games = sorted(
@@ -71,22 +71,29 @@ def select_favorites():
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
+    
+    name_filter = None
+    filtered_games = sorted_games
 
     if request.method == 'POST':
         
-
-        if 'selected_games' not in session:
-            session['selected_games'] = []
-
-        selected_all = set(int(appid) for appid in session.get('selected_games', []))
-        
-        offset = int(request.form.get('offset', 0))
+        name_filter = request.form.get('name', '').lower()
         action = request.form.get('action')
 
+        print(action)
+        if action and action.lower() == 'search':
+            offset = 0
+        else:
+            offset = int(request.form.get('offset', 0))
+
+        if name_filter:
+            filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
+        else:
+            filtered_games = sorted_games
+
         # Get the current page's games BEFORE modifying offset
-        current_page_game_ids = {
-            (game['appid']) for game in sorted_games[offset:offset + page_size]
-        }
+        current_page_game_ids = {game['appid'] for game in filtered_games[offset:offset + page_size]}
+
 
         # Then modify offset based on button action
         if action == 'Next →':
@@ -96,23 +103,25 @@ def select_favorites():
 
         selected = set(int(appid) for appid in request.form.getlist('selected_games'))
 
-        selected_all -= current_page_game_ids
         selected_all.update(selected)
 
         session['selected_games'] = list(selected_all)
-        total_selected_count = len(selected_all)
         print("Selected game IDs:", session['selected_games'])
         
         if 'continue' in request.form and len(selected_all) > 4:
             return redirect(url_for('main.recommendations'))
-            print("Hello")
     else:
+        name_filter = request.args.get('name', '').lower()
         offset = int(request.args.get('offset', 0))
+        if name_filter:
+            filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
+        else:
+            filtered_games = sorted_games
 
-    paginated_games = sorted_games[offset:offset + page_size]
+    paginated_games = filtered_games[offset:offset + page_size]
+    total_selected_count = len(selected_all)
 
-    # Pagination controls
-    next_offset = offset + page_size if offset + page_size < len(sorted_games) else None
+    next_offset = offset + page_size if offset + page_size < len(filtered_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
 
     return render_template(
@@ -122,8 +131,9 @@ def select_favorites():
         previous_offset=previous_offset,
         offset=offset,
         selected=selected_all,
-        total_selected_count=total_selected_count
-        )
+        total_selected_count=total_selected_count,
+        name_filter=name_filter
+    )
 
 @bp.route('/recommendations', methods=['GET', 'POST'])
 def recommendations():
