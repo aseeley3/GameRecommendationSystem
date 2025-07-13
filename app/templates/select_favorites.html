@@ -41,6 +41,7 @@
 
 <input type="hidden" name="offset" value="{{ offset or 0 }}">
 <input type="hidden" name="name" value="{{ name_filter or '' }}">
+<input type="hidden" name="platforms" value="{{ request.args.get('platforms', '') }}">
 
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}

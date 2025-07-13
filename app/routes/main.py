@@ -32,6 +32,18 @@ with open('data_processing/ids_to_reviews.pkl', 'rb') as f:
 with open("data_processing/description_fallback_embeddings.pkl", "rb") as f:
     embeddings_dict = pickle.load(f)
 
+def platform_filter(game, platform_filter_list):
+    game_platforms = game.get('platforms', '').split(';')
+    return any(p in platform_filter_list for p in game_platforms)
+
+def age_filter(game, user_age):
+    try:
+        required_age = int(game.get('required_age', 0))
+    except (ValueError, TypeError):
+        required_age = 0
+
+    return user_age >= required_age
+
 @bp.route('/')
 def index():
     """
@@ -51,28 +63,55 @@ def recommend():
 
 @bp.route('/select-platform', methods=['GET', 'POST'])
 def select_platform():
-    if request.method == 'POST':
-        selected_platforms = request.form.getlist('platform')
-        # Process selected platforms as needed
-        return render_template('select_favoritres.html', platforms=selected_platforms)
+    platforms = request.args.get('platforms')
+    is_adult_user = request.args.get('isAdultUser')
+
+    if platforms or is_adult_user is not None:
+        if platforms:
+            session['platformFilter'] = platforms
+
+        if is_adult_user is not None:
+            session['isAdultUser'] = is_adult_user
+            print("inSelectPlat")
+            print(session['isAdultUser'])
+
+        # Redirect after saving session to avoid resubmission on refresh
+        return redirect(url_for('main.select_favorites'))
+
+    # If no parameters, just render the select platform page
     return render_template('select_platform.html')
 
 @bp.route('/select-favorites', methods=['GET', 'POST'])
 def select_favorites():
+
     if 'selected_games' not in session:
         session['selected_games'] = []
+
     selected_all = set(int(appid) for appid in session.get('selected_games', []))
     page_size = 20
     total_selected_count = len(selected_all)
     # Sort games
+
+    platform_filter_list = session.get('platformFilter', 'windows;mac;linux').split(';')
+    user_is_adult = int(session.get('isAdultUser', 0))
+    print("inSelectFavs")
+    print(platform_filter_list)
+
     sorted_games = sorted(
-        games_dict.values(),
+        (game for game in games_dict.values()
+        if any(platform in platform_filter_list for platform in game['platforms'].split(';'))
+        ),
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
-    
+
     name_filter = None
-    filtered_games = sorted_games
+    
+    filtered_games = [
+    game for game in sorted_games
+    if platform_filter(game, platform_filter_list)
+    and age_filter(game, user_is_adult)
+    ]
 
     if request.method == 'POST':
         
@@ -92,10 +131,7 @@ def select_favorites():
             offset = int(request.form.get('offset', 0))
 
         if name_filter:
-            filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
-        else:
-            filtered_games = sorted_games
-
+            filtered_games = [game for game in filtered_games if name_filter in game['name'].lower()]
         # Get the current page's games BEFORE modifying offset
         current_page_game_ids = {game['appid'] for game in filtered_games[offset:offset + page_size]}
 
@@ -122,9 +158,7 @@ def select_favorites():
         name_filter = request.args.get('name', '').lower()
         offset = int(request.args.get('offset', 0))
         if name_filter:
-            filtered_games = [game for game in sorted_games if name_filter in game['name'].lower()]
-        else:
-            filtered_games = sorted_games
+            filtered_games = [game for game in filtered_games if name_filter in game['name'].lower()]
 
     paginated_games = filtered_games[offset:offset + page_size]
     total_selected_count = len(selected_all)
@@ -182,6 +216,9 @@ def recommendations():
 
     # Optionally skip the first result if it's the game itself (similarity 1.0)
     recommendations = [(g, s) for g, s in game_scores if g not in target_games and g in games_dict]
+    
+    platform_filter_list = session.get('platformFilter', 'windows;mac;linux').split(';')
+    user_is_adult = int(session.get('isAdultUser', 0))
 
     selected_games = []
     for game_id, similarity in recommendations:
@@ -191,12 +228,18 @@ def recommendations():
             game_copy['similarity'] = similarity
             selected_games.append(game_copy)
 
-    next_offset = offset + page_size if offset + page_size < len(selected_games) else None
+    filtered_games = [
+    game for game in selected_games
+    if platform_filter(game, platform_filter_list)
+    and age_filter(game, user_is_adult)
+    ]
+
+    next_offset = offset + page_size if offset + page_size < len(filtered_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
 
     # Paginate games
-    paginated_games = selected_games[offset:offset + page_size]
-    print(f"Length of Recommendations {len(games)}")
+    paginated_games = filtered_games[offset:offset + page_size]
+    print(f"Length of Recommendations {len(filtered_games)}")
 
     # Render with current page of games
     return render_template(

@@ -57,3 +57,6 @@ data_processing/*
 .coverage
 htmlcov/
 .pytest_cache/ 
+
+# Misc
+ngrok.exe
