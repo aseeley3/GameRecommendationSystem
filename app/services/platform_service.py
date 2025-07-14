@@ -8,18 +8,23 @@ class PlatformService:
         self.games_data = games_data
     
     def filter_games_by_platform(self, platform: str) -> List[Dict]:
-        # platform: Platform to filter by ('windows', 'mac', 'linux', 'all')
+        # platform: e.g., 'windows', 'mac;linux', or 'all'
         if platform == 'all':
             return self.games_data.copy()
-        
+
+        platform_set = set(p.strip().lower() for p in platform.split(';') if p.strip())
+
         filtered_games = []
         for game in self.games_data:
             platforms_str = game.get('platforms') or game.get('platform')
             if not platforms_str:
                 continue
-            platforms = [p.strip().lower() for p in platforms_str.split(';')]
-            if platform in platforms:
+            game_platforms = set(p.strip().lower() for p in platforms_str.split(';'))
+            
+            # Check if any of the requested platforms are supported by the game
+            if platform_set & game_platforms:
                 filtered_games.append(game)
+
         return filtered_games
     
     def _supports_platform(self, game: Dict, platform: str) -> bool:
