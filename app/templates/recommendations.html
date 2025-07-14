@@ -7,25 +7,47 @@
 <hr class="w-48 h-1 mx-auto my-4 bg-gray-300 border-0 rounded-sm md:my-10 dark:bg-gray-700 transition-colors duration-500 delay-200">
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
-  {% for game in games %}
-    {% include 'game_card.html' %}
-  {% endfor %}
-</div>
+{% if games %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
+    {% for game in games %}
+      {% include 'game_card.html' %}
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-center text-gray-500 dark:text-gray-400 text-xl mt-8">
+    No recommendations matched your filters.
+  </p>
+{% endif %}
 
-<!-- Controls if the buttons for loading more games appears or not -->
+<input type="hidden" name="platform" value="{{ current_platform }}">
+<input type="hidden" name="genre" value="{{ current_genre }}">
+<input type="hidden" name="age" value="{{ age }}">
+<input type="hidden" name="offset" value="{{ offset }}">
+
 <div class="flex justify-between mt-4">
   {% if previous_offset is not none %}
-    <a href="?offset={{ previous_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
-      ← Previous
+  <a href="{{ url_for('main.recommendations',
+                      offset=previous_offset,
+                      platform=current_platform,
+                      genre=current_genre if current_genre != 'all' else None,
+                      age=age,
+                      name=name_filter if name_filter else None) }}"
+                      class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
+  ← Previous Page
     </a>
   {% else %}
-    <span></span> <!-- Empty element to keep spacing when Previous is absent -->
+    <span></span>
   {% endif %}
-  
+
   {% if next_offset is not none %}
-    <a href="?offset={{ next_offset }}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_genre and current_genre != 'all' %}&genre={{ current_genre }}{% endif %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white">
-      Next →
+  <a href="{{ url_for('main.recommendations',
+                      offset=next_offset,
+                      platform=current_platform,
+                      genre=current_genre if current_genre != 'all' else None,
+                      age=age,
+                      name=name_filter if name_filter else None) }}"
+                      class="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded text-black">
+      Next Page →
     </a>
   {% endif %}
 </div>

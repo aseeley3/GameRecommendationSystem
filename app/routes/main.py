@@ -34,6 +34,14 @@ with open('data_processing/ids_to_reviews.pkl', 'rb') as f:
 with open("data_processing/description_fallback_embeddings.pkl", "rb") as f:
     embeddings_dict = pickle.load(f)
 
+def age_filter(game, user_age):
+    try:
+        required_age = int(game.get('required_age', 0))
+    except (ValueError, TypeError):
+        required_age = 0
+
+    return user_age >= required_age
+
 @bp.route('/')
 def index():
     return render_template('index.html')
@@ -58,6 +66,7 @@ def select_favorites():
     page_size = 20
     platform = request.args.get('platform', 'all')
     genre = request.args.get('genre', 'all')
+    age = int(request.args.get('age') or 0)
 
     # Create services for filtering
     platform_service = create_platform_service(games)
@@ -82,9 +91,13 @@ def select_favorites():
         genre_service_filtered = create_genre_service(filtered_games)
         filtered_games = genre_service_filtered.filter_games_by_genre(genre)
 
+    age_filtered_games = [
+    game for game in filtered_games if age_filter(game, age)
+    ]
+
     # Sort games by review count
     sorted_games = sorted(
-        filtered_games,
+        age_filtered_games,
         key=lambda game: len(reviews_dict.get(game['appid'], [])),
         reverse=True
     )
@@ -117,8 +130,13 @@ def select_favorites():
 
         # Handle continue action
         if 'continue' in form and len(selected) >= 5:
-            return redirect(url_for('main.recommendations'))
-
+         return redirect(url_for(
+        'main.recommendations',
+        platform=platform,
+        genre=genre,
+        age=age,
+        name=name_filter if name_filter else None
+            ))
     else:
         # For GET requests, get offset from query params
         offset = int(request.args.get('offset', 0))
@@ -155,6 +173,7 @@ def select_favorites():
         total_selected_count=len(selected),
         current_platform=platform,
         current_genre=genre,
+        age = age,
         selected_games_details=selected_games_details,
         show_genre_filter=True,
         name_filter=name_filter# Show genre filter on favorites page
@@ -288,8 +307,11 @@ def recommendations():
     # Get offset from query parameter (default to 0)
     offset = int(request.args.get('offset', 0))
     page_size = 20
+
     platform = request.args.get('platform', 'all')
     genre = request.args.get('genre', 'all')
+    name_filter = request.args.get('name', '').lower().strip()
+    age = int(request.args.get('age') or 0)
 
     game_ids = list(embeddings_dict.keys())
 
@@ -332,10 +354,23 @@ def recommendations():
             game_copy['similarity'] = similarity
             selected_games.append(game_copy)
 
-    # Apply genre filtering to recommendations if specified
+    # Apply platform filter
+    if platform != 'all':
+        platform_service = create_platform_service(selected_games)
+        selected_games = platform_service.filter_games_by_platform(platform)
+
+    # Apply genre filter
     if genre != 'all':
         genre_service = create_genre_service(selected_games)
         selected_games = genre_service.filter_games_by_genre(genre)
+
+    # Apply age filter
+    selected_games = [game for game in selected_games if age_filter(game, age)]
+
+    # Apply name search filter
+    if name_filter:
+        selected_games = [game for game in selected_games if name_filter in game['name'].lower()]
+
 
     next_offset = offset + page_size if offset + page_size < len(selected_games) else None
     previous_offset = max(offset - page_size, 0) if offset > 0 else None
@@ -349,7 +384,10 @@ def recommendations():
         games=paginated_games,
         next_offset=next_offset,
         previous_offset=previous_offset,
+        offset=offset,
         current_platform=platform,
         current_genre=genre,
-        show_genre_filter=True  # Show genre filter on recommendations page
+        age=age,
+        name_filter=name_filter,
+        show_genre_filter=True
         )
