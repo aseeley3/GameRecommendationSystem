@@ -10,7 +10,10 @@
 
 <form id="search-form" method="get" action="{{ url_for('main.select_favorites') }}" class="max-w-md mx-auto relative">
   <input type="hidden" name="platform" value="{{ current_platform }}">
-  <input type="hidden" name="offset" value="{{ offset }}">
+  <input type="hidden" name="offset" value="0">
+  <input type="hidden" name="age" value="{{ age }}">
+    <input type="hidden" name="genre" value="{{ genre }}">
+
 <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
 <div class="max-w-md mx-auto relative">
   <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
