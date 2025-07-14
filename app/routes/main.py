@@ -391,3 +391,8 @@ def recommendations():
         name_filter=name_filter,
         show_genre_filter=True
         )
+
+@bp.route('/reset-session', methods=['POST'])
+def reset_session():
+    session.clear()
+    return redirect(url_for('main.index'))
