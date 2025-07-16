@@ -130,11 +130,14 @@ def select_favorites():
 
         # Handle continue action
         if 'continue' in form and len(selected) >= 5:
-         return redirect(url_for(
+            platform_value = form.get('platform', request.args.get('platform', 'windows;mac;linux'))
+            genre_value = form.get('genre', request.args.get('genre', 'all'))
+            age_value = int(form.get('age', request.args.get('age') or 0))
+            return redirect(url_for(
         'main.recommendations',
-        platform=platform,
-        genre=genre,
-        age=age,
+            platform = platform_value,
+            genre = genre_value,
+            age = age_value,
         name=name_filter if name_filter else None
             ))
     else:
@@ -171,8 +174,8 @@ def select_favorites():
         offset=offset,
         selected=selected,
         total_selected_count=len(selected),
-        current_platform=platform,
-        current_genre=genre,
+        platform=platform,
+        genre=genre,
         age = age,
         selected_games_details=selected_games_details,
         show_genre_filter=True,
