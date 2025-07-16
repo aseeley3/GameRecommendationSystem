@@ -55,8 +55,8 @@
   {% if previous_offset is not none %}
   <a href="{{ url_for('main.select_favorites',
                       offset=previous_offset,
-                      platform=current_platform,
-                      genre=current_genre if current_genre != 'all' else None,
+                      platform=platform,
+                      genre=genre if genre != 'all' else None,
                       age=age,
                       name=name_filter if name_filter else None) }}"
                       class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black">
@@ -69,8 +69,8 @@
   {% if next_offset is not none %}
   <a href="{{ url_for('main.select_favorites',
                       offset=next_offset,
-                      platform=current_platform,
-                      genre=current_genre if current_genre != 'all' else None,
+                      platform=platform,
+                      genre=genre if genre != 'all' else None,
                       age=age,
                       name=name_filter if name_filter else None) }}"
                       class="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded text-black">
