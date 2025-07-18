@@ -9,10 +9,10 @@
 </div>
 
 <form id="search-form" method="get" action="{{ url_for('main.select_favorites') }}" class="max-w-md mx-auto relative">
-  <input type="hidden" name="platform" value="{{ current_platform }}">
+  <input type="hidden" name="platform" value="{{ platform }}">
   <input type="hidden" name="offset" value="0">
   <input type="hidden" name="age" value="{{ age }}">
-    <input type="hidden" name="genre" value="{{ genre }}">
+  <input type="hidden" name="genre" value="all">
 
 <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white transition-colors">Search</label>
 <div class="max-w-md mx-auto relative">
@@ -47,7 +47,7 @@
 </div>
 
 <input type="hidden" name="offset" value="{{ offset or 0 }}">
-<input type="hidden" name="platform" value="{{ current_platform }}">
+<input type="hidden" name="platform" value="{{ platform }}">
 <input type="hidden" name="genre" value="{{ genre }}">
 <input type="hidden" name="age" value="{{ age }}">
 
@@ -55,8 +55,8 @@
   {% if previous_offset is not none %}
   <a href="{{ url_for('main.select_favorites',
                       offset=previous_offset,
-                      platform=current_platform,
-                      genre=current_genre if current_genre != 'all' else None,
+                      platform=platform,
+                      genre=genre if genre != 'all' else None,
                       age=age,
                       name=name_filter if name_filter else None) }}"
                       class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded text-black transition-colors">
@@ -69,8 +69,8 @@
   {% if next_offset is not none %}
   <a href="{{ url_for('main.select_favorites',
                       offset=next_offset,
-                      platform=current_platform,
-                      genre=current_genre if current_genre != 'all' else None,
+                      platform=platform,
+                      genre=genre if genre != 'all' else None,
                       age=age,
                       name=name_filter if name_filter else None) }}"
                       class="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded text-black transition-colors">
