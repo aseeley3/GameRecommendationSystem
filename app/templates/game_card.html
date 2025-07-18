@@ -1,7 +1,7 @@
 
     <!-- Start Card -->
 
-<div class="transition-colors duration-500 delay-200 group max-w-sm p-6 bg-white border border-gray-200 rounded-lg
+<div class="transition-colors group max-w-sm p-6 bg-white border border-gray-200 rounded-lg
             hover:bg-blue-300 hover:dark:bg-blue-700
             focus:ring-4 shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto">
     <!-- Media (Img & Video)-->
@@ -27,7 +27,7 @@
         <!-- Game Title and Heart -->
     <a>
         <div class="flex items-center">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors duration-500 delay-200">{{ game.name }}</h5>
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors">{{ game.name }}</h5>
 
         {% if game.get('similarity') is none %}
         <div class="ml-auto flex items-center">
@@ -35,7 +35,7 @@
         {% if game['appid'] in selected %}checked{% endif %}>
         <label for="heartbox-{{ game.appid }}" class="cursor-pointer select-none inline-flex peer-checked:text-red-600
             peer-checked:dark:text-red-600 py-4 ms-2 text-2xl font-extrabold
-            text-gray-500 dark:text-gray-300 hover:text-red-400 dark:hover:text-red-400 transition-colors duration-500">
+            text-gray-500 dark:text-gray-300 hover:text-red-400 dark:hover:text-red-400 transition-colors">
 
             ❤︎
 
@@ -47,14 +47,14 @@
     </a>
         <!-- Game Descirption -->
     <a>
-        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 transition-colors duration-500 delay-200">{{ game.short_description }}
+        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 transition-colors">{{ game.short_description }}
         </p>
     </a>
     {% if game.get('similarity') is not none %}
     <a>
-        <p class="mb-3 font-normal">
-        Similarity: 
-        <span class="similarity_score">
+        <p class="mb-3 font-normal transition-colors">
+        Similarity:
+        <span class="similarity_score transition-colors">
             {{ (game.get('similarity')*100)|round(1) }}%
         </span>
         </p>
@@ -67,7 +67,7 @@
         class="cursor-pointer text-white bg-[#3b5998] hover:bg-[#3b5998]/90 focus:ring-4 focus:outline-none
         focus:ring-[#3b5998]/50 font-medium rounded-lg
         text-sm px-5 py-2.5 text-center inline-flex items-center
-        dark:focus:ring-[#3b5998]/55 me-2 mb-2">
+        dark:focus:ring-[#3b5998]/55 me-2 mb-2 transition-colors">
         <!-- Steam Store SVG -->
     <img class="w-4 h-4 me-2"
         src = "{{ url_for('static', filename='media/Steam_icon_logo.svg') }}">
