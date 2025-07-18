@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 animate-fade duration-500 delay-200 transition-colors">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 animate-fade">
     <div class="max-w-4xl mx-auto px-4">
         <!-- Age Verification Section -->
-<div id="ageVerificationSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 duration-500 delay-200 transition-colors">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Please Enter Your Birth Date to Continue:</h2>
+<div id="ageVerificationSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Please Enter Your Birth Date to Continue:</h2>
     <form id="ageForm" class="grid grid-cols-3 gap-4">
         <div>
-            <label for="day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Day</label>
-            <select id="day" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
+            <label for="day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Day</label>
+            <select id="day" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                 <option value="">Day</option>
                 {% for i in range(1, 32) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -17,8 +17,8 @@
             </select>
         </div>
         <div>
-            <label for="month" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Month</label>
-            <select id="month" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
+            <label for="month" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Month</label>
+            <select id="month" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                 <option value="">Month</option>
                 {% for i in range(1, 13) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -26,8 +26,8 @@
             </select>
         </div>
         <div>
-            <label for="year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Year</label>
-            <select id="year" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">
+            <label for="year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Year</label>
+            <select id="year" class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                 <option value="">Year</option>
                 {% for i in range(2025, 1900, -1) %}
                     <option value="{{ i }}">{{ i }}</option>
@@ -41,13 +41,13 @@
 </div>
 
         <!-- Platform Selection Section -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 duration-500 delay-200 transition-colors">
-            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white duration-500 delay-200 transition-colors">Select Your Platform</h2>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 ">
+            <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Select Your Platform</h2>
 
             <ul class="grid w-full gap-6 md:grid-cols-3">
                 <li>
                     <input type="checkbox" id="windows-option" value="windows" class="hidden peer">
-                    <label for="windows-option" class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 dark:peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700">                           
+                    <label for="windows-option" class="inline-flex items-center justify-between w-full p-5 text-gray-500 bg-white border-2 border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300 dark:border-gray-700 peer-checked:border-blue-600 dark:peer-checked:border-blue-600 hover:text-gray-600 dark:peer-checked:text-gray-300 peer-checked:text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 ">
                         <div class="flex items-center gap-3">
                             <svg class="self-center w-7 h-7 text-sky-500" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path d="M3,12V6.75L9,5.43v6.48L3,12M20,3v8.75L10,11.9V5.21L20,3M3,13l6,.09V19.9L3,18.75V13m17,.25V22L10,20.09v-7Z"/>
