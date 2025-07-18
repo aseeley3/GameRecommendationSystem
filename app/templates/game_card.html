@@ -52,9 +52,9 @@
     </a>
     {% if game.get('similarity') is not none %}
     <a>
-        <p class="mb-3 font-normal">
-        Similarity: 
-        <span class="similarity_score">
+        <p class="mb-3 font-normal transition-colors">
+        Similarity:
+        <span class="similarity_score transition-colors">
             {{ (game.get('similarity')*100)|round(1) }}%
         </span>
         </p>
@@ -67,7 +67,7 @@
         class="cursor-pointer text-white bg-[#3b5998] hover:bg-[#3b5998]/90 focus:ring-4 focus:outline-none
         focus:ring-[#3b5998]/50 font-medium rounded-lg
         text-sm px-5 py-2.5 text-center inline-flex items-center
-        dark:focus:ring-[#3b5998]/55 me-2 mb-2">
+        dark:focus:ring-[#3b5998]/55 me-2 mb-2 transition-colors">
         <!-- Steam Store SVG -->
     <img class="w-4 h-4 me-2"
         src = "{{ url_for('static', filename='media/Steam_icon_logo.svg') }}">

@@ -9,20 +9,20 @@
            class="start-game-btn block w-full max-w-md"
            style="text-decoration: none;">
             <div class="text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Start Game Recommender</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white transition-colors">Start Game Recommender</h3>
             </div>
         </a>
     </div>
     
     <!-- Search Section -->
-    <div class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8" id="searchSection">
-        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Find Game Recommendations</h2>
+    <div class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 transition-colors" id="searchSection">
+        <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white transition-colors">Find Game Recommendations</h2>
         <form id="searchForm" class="space-y-4">
             <div>
-                <label for="gameSearch" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search for a game</label>
-                <input type="text" id="gameSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter game name..." required>
+                <label for="gameSearch" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white transition-colors">Search for a game</label>
+                <input type="text" id="gameSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-colors" placeholder="Enter game name..." required>
             </div>
-            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Get Recommendations</button>
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 transition-colors">Get Recommendations</button>
         </form>
     </div>
 
@@ -63,16 +63,16 @@ function displayResults(recommendations) {
     resultsDiv.innerHTML = '';
     
     if (recommendations.length === 0) {
-        resultsDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No recommendations found.</p>';
+        resultsDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 transition-colors">No recommendations found.</p>';
         return;
     }
     
     recommendations.forEach(game => {
         const gameCard = `
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${game.name}</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">${game.description}</p>
-                <p class="text-blue-600 dark:text-blue-400">Price: $${game.price}</p>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors">
+                <h3 class="text-xl font-bold mb-2 text-gray-900 dark:text-white transition-colors">${game.name}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4 transition-colors">${game.description}</p>
+                <p class="text-blue-600 dark:text-blue-400 transition-colors">Price: $${game.price}</p>
             </div>
         `;
         resultsDiv.innerHTML += gameCard;
